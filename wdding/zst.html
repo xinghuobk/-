@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0">
+  <title>💗 祝姐姐新婚快乐</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      height: 100dvh;
+      width: 100vw;
+      position: fixed;
+      touch-action: manipulation;
+    }
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    canvas { display: block; }
+    #blessing-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .blessing-item {
+      position: absolute;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(20px) scale(0.7);
+      transition: all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      text-shadow: 0 0 20px rgba(255,150,180,0.9), 0 0 50px rgba(255,120,160,0.6);
+      font-weight: 600;
+      color: #ffe0ec;
+    }
+    .blessing-item.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .blessing-item.hide {
+      opacity: 0;
+      transform: translateY(-30px) scale(0.6);
+      transition: all 0.6s ease-in;
+    }
+    #final-blessing {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(180deg, #ffe0f0, #ff8bb4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 50px rgba(255,130,170,0.8), 0 0 100px rgba(255,90,140,0.5);
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      pointer-events: none;
+      letter-spacing: 0.08em;
+      text-align: center;
+      width: 100%;
+    }
+    #final-blessing.show {
+      opacity: 1;
+    }
+    #hint {
+      position: fixed;
+      bottom: 4vh;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,180,200,0.6);
+      font-size: 0.8rem;
+      z-index: 5;
+      pointer-events: none;
+      transition: opacity 0.8s;
+    }
+    #hint.fade { opacity: 0; }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+  <div id="blessing-layer"></div>
+  <div id="final-blessing">祝姐姐新婚快乐</div>
+  <div id="hint">💗 致我们最亲爱的姐姐</div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+
+    // ==================== 核心配置 ====================
+    const SONG_DURATION = 190; // 歌曲时长：3分10秒 = 190秒
+    const BLESSING_APPEAR_TIME = 170; // 祝福语出现时间：2分50秒 = 170秒
+    const FINAL_BLESSING_TIME = SONG_DURATION; // 最终祝福时间：歌曲结束
+
+    // ==================== 3D心形生成函数 ====================
+    function isInsideHeart(x, y, z) {
+      const a = x * x + 2.25 * y * y + z * z - 1;
+      const val = a * a * a - x * x * z * z * z - (9 / 80) * y * y * z * z * z;
+      return val < 0;
+    }
+
+    function generateHeartPoints(count) {
+      const points = [];
+      const scale = 0.18;
+      const bounds = { x: 1.3, y: 1.6, z: 1.2 };
+      let attempts = 0;
+      while (points.length < count && attempts < count * 50) {
+        const x = (Math.random() - 0.5) * bounds.x * 2;
+        const y = (Math.random() - 0.5) * bounds.y * 2;
+        const z = (Math.random() - 0.5) * bounds.z * 2;
+        if (isInsideHeart(x, y, z)) {
+          points.push(new THREE.Vector3(x * scale, y * scale, z * scale));
+        }
+        attempts++;
+      }
+      while (points.length < count) {
+        const x = (Math.random() - 0.5) * bounds.x * 2 * scale;
+        const y = (Math.random() - 0.5) * bounds.y * 2 * scale;
+        const z = (Math.random() - 0.5) * bounds.z * 2 * scale;
+        points.push(new THREE.Vector3(x, y, z));
+      }
+      return points;
+    }
+
+    const heartLocalPoints = generateHeartPoints(2000);
+
+    // ==================== 场景搭建 ====================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.5, 50);
+    camera.position.set(0, -0.2, 6);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x0a0a0a);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    // 发光贴图
+    function createGlowTex(inner, outer) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64; canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, inner);
+      g.addColorStop(0.15, inner);
+      g.addColorStop(0.4, outer);
+      g.addColorStop(0.7, 'rgba(255,100,150,0.08)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(canvas);
+    }
+    const glowTex = createGlowTex('#ffffff', '#ff78a8');
+
+    // 粒子系统
+    const particleCount = heartLocalPoints.length;
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+
+    const particlesMeta = heartLocalPoints.map((p, i) => {
+      const color = new THREE.Color();
+      color.setHSL(0.93 + Math.random() * 0.05, 0.7 + Math.random() * 0.3, 0.55 + Math.random() * 0.35);
+      return {
+        localPos: p.clone(),
+        worldPos: new THREE.Vector3(),
+        velocity: new THREE.Vector3(),
+        baseColor: color,
+        burstDelay: Math.random() * 0.7,
+        burstSpeed: 1.8 + Math.random() * 5,
+        burstDir: new THREE.Vector3((Math.random() - 0.5) * 2, Math.random() * 1.5 + 0.2, (Math.random() - 0.5) * 2).normalize(),
+        sparklePhase: Math.random() * Math.PI * 2,
+        sparkleSpeed: 0.4 + Math.random() * 1.2,
+      };
+    });
+
+    for (let i = 0; i < particleCount; i++) {
+      const pos = particlesMeta[i].localPos;
+      positions[i * 3] = pos.x; positions[i * 3 + 1] = pos.y; positions[i * 3 + 2] = pos.z;
+      const c = particlesMeta[i].baseColor;
+      colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+      sizes[i] = 0.025 + Math.random() * 0.06;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.10, map: glowTex, vertexColors: true,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+      depthTest: true, transparent: true, opacity: 0.92, sizeAttenuation: true,
+    });
+
+    const pointsMesh = new THREE.Points(geometry, material);
+    scene.add(pointsMesh);
+
+    // 背景星空
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 400;
+    const starPosArr = new Float32Array(starCount * 3);
+    const starColArr = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPosArr[i * 3] = (Math.random() - 0.5) * 18;
+      starPosArr[i * 3 + 1] = (Math.random() - 0.5) * 22;
+      starPosArr[i * 3 + 2] = -3 - Math.random() * 10;
+      const sc = new THREE.Color().setHSL(0.9 + Math.random() * 0.1, 0.4, 0.6 + Math.random() * 0.4);
+      starColArr[i * 3] = sc.r; starColArr[i * 3 + 1] = sc.g; starColArr[i * 3 + 2] = sc.b;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPosArr, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starColArr, 3));
+    const starMat = new THREE.PointsMaterial({
+      size: 0.03, map: glowTex, vertexColors: true,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+      depthTest: false, transparent: true, opacity: 0.5, sizeAttenuation: true,
+    });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // ==================== 粒子世界坐标计算 ====================
+    function getWorldPos(meta, time) {
+      const lx = meta.localPos.x;
+      const ly = meta.localPos.y;
+      const lz = meta.localPos.z;
+      const rotY = time * 1.2;
+      const cos = Math.cos(rotY);
+      const sin = Math.sin(rotY);
+      const wx = lx * cos + lz * sin;
+      const wz = -lx * sin + lz * cos;
+      const floatY = Math.sin(time * 2.2 + meta.sparklePhase) * 0.06;
+      const wy = ly + floatY;
+      return { x: wx, y: wy, z: wz };
+    }
+
+    // 上升目标点
+    const riseTargets = particlesMeta.map(p => {
+      return new THREE.Vector3(
+        p.localPos.x * (0.4 + Math.random() * 0.8),
+        p.localPos.y + 3.2 + Math.random() * 2.5,
+        p.localPos.z * (0.4 + Math.random() * 0.8)
+      );
+    });
+
+    // ==================== 动画状态机 ====================
+    const STATE = { HEART: 0, RISE: 1, BURST: 2, BLESSING: 3 };
+    let currentState = STATE.HEART;
+    let stateStartTime = 0;
+    const HEART_DUR = 50;  // 第一阶段持续50秒
+    const RISE_DUR = 65;   // 第二阶段持续65秒，总长115秒
+    let blessingTriggered = false;
+    let finalShown = false;
+
+    function switchState(newState, time) {
+      currentState = newState;
+      stateStartTime = time;
+      if (newState === STATE.BURST) {
+        particlesMeta.forEach(m => {
+          m.velocity.set(0, 0, 0);
+          m.burstDir.set((Math.random() - 0.5) * 2, Math.random() * 1.5 + 0.2, (Math.random() - 0.5) * 2).normalize();
+        });
+      }
+    }
+
+    // ==================== 音频集成 ====================
+    let audioContext;
+    let audioAnalyser;
+    let audioDataArray;
+    let audioSource;
+    let audioBuffer;
+
+    async function initAudio() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioAnalyser = audioContext.createAnalyser();
+      audioAnalyser.fftSize = 256;
+      audioAnalyser.smoothingTimeConstant = 0.8;
+      audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+
+      try {
+        const response = await fetch('zhizizhishou.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = audioBuffer;
+        audioSource.connect(audioAnalyser);
+        audioAnalyser.connect(audioContext.destination);
+        audioSource.start(0);
+        console.log('🎵 音乐开始播放，动画已同步');
+      } catch (error) {
+        console.warn('⚠️ 音乐文件加载失败，动画将独立运行:', error);
+      }
+    }
+
+    function getAudioIntensity() {
+      if (!audioAnalyser) return 0;
+      audioAnalyser.getByteFrequencyData(audioDataArray);
+      let sum = 0;
+      for (let i = 0; i < audioDataArray.length; i++) {
+        sum += audioDataArray[i];
+      }
+      return (sum / audioDataArray.length) / 255.0;
+    }
+
+    // ==================== 粒子更新 ====================
+    function updateParticles(time, dt) {
+      const posArr = geometry.attributes.position.array;
+      const colArr = geometry.attributes.color.array;
+      const sizeArr = geometry.attributes.size.array;
+      const elapsed = time - stateStartTime;
+      const intensity = getAudioIntensity();
+
+      for (let i = 0; i < particleCount; i++) {
+        const meta = particlesMeta[i];
+        const idx = i * 3;
+        let px, py, pz;
+
+        switch (currentState) {
+          case STATE.HEART: {
+            const world = getWorldPos(meta, time);
+            px = world.x; py = world.y; pz = world.z;
+            // 音频反应：粒子随音乐闪烁和缩放
+            const c = meta.baseColor;
+            const audioBoost = 1 + intensity * 1.5;
+            const s = Math.sin(time * meta.sparkleSpeed * 4 + meta.sparklePhase) * 0.1 + 0.9;
+            colArr[idx] = Math.min(1, c.r * s * audioBoost);
+            colArr[idx + 1] = Math.min(1, c.g * s * 0.9 * audioBoost);
+            colArr[idx + 2] = Math.min(1, c.b * s * 0.85 * audioBoost);
+            sizeArr[i] = (0.025 + Math.abs(Math.sin(time * 3 + meta.sparklePhase)) * 0.04) * (1 + intensity);
+            meta.worldPos.set(px, py, pz);
+            break;
+          }
+          case STATE.RISE: {
+            const progress = Math.min(elapsed / RISE_DUR, 1.0);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const heartWorld = getWorldPos(meta, time * 0.5);
+            const target = riseTargets[i];
+            px = heartWorld.x + (target.x - heartWorld.x) * ease;
+            py = heartWorld.y + (target.y - heartWorld.y) * ease;
+            pz = heartWorld.z + (target.z - heartWorld.z) * ease;
+            const angle = meta.localPos.y * 8 + progress * Math.PI * 4;
+            const radius = (1 - progress) * 0.3;
+            px += Math.cos(angle) * radius;
+            pz += Math.sin(angle) * radius;
+            meta.worldPos.set(px, py, pz);
+            meta.velocity.set(0, 0, 0);
+            const bright = 1 + progress * 0.4 + intensity;
+            const bc = meta.baseColor;
+            colArr[idx] = Math.min(1, bc.r * bright);
+            colArr[idx + 1] = Math.min(1, bc.g * bright);
+            colArr[idx + 2] = Math.min(1, bc.b * bright);
+            sizeArr[i] = (0.04 + progress * 0.05) * (1 + intensity * 0.5);
+            break;
+          }
+          case STATE.BURST: {
+            const burstElapsed = elapsed;
+            const localT = Math.max(0, burstElapsed - meta.burstDelay);
+            if (localT <= 0) {
+              const target = riseTargets[i];
+              px = target.x; py = target.y; pz = target.z;
+              meta.worldPos.set(px, py, pz);
+              colArr[idx] = meta.baseColor.r;
+              colArr[idx + 1] = meta.baseColor.g;
+              colArr[idx + 2] = meta.baseColor.b;
+              sizeArr[i] = 0.06;
+            } else {
+              const totalBurst = 35 - meta.burstDelay;
+              const prog = Math.min(localT / Math.max(totalBurst, 0.3), 1);
+              if (meta.velocity.length() < 0.01 && prog < 0.05) {
+                meta.velocity.copy(meta.burstDir).multiplyScalar(meta.burstSpeed * (1 + intensity));
+                meta.velocity.x += (Math.random() - 0.5) * 1.5;
+                meta.velocity.y += Math.random() * 1.5;
+                meta.velocity.z += (Math.random() - 0.5) * 1.5;
+              }
+              meta.velocity.y -= (3.0 - intensity * 2) * dt;
+              meta.velocity.multiplyScalar(0.93);
+              const wp = meta.worldPos;
+              wp.x += meta.velocity.x * dt;
+              wp.y += meta.velocity.y * dt;
+              wp.z += meta.velocity.z * dt;
+              px = wp.x; py = wp.y; pz = wp.z;
+              const life = 1 - prog;
+              const fc = new THREE.Color();
+              if (prog < 0.3) fc.setHSL(0.93, 0.9, 0.7 + prog * 0.4);
+              else if (prog < 0.6) fc.setHSL(0.1 + Math.random() * 0.07, 0.8, 0.65);
+              else fc.setHSL(0.1, 0.5, 0.55);
+              colArr[idx] = fc.r * life;
+              colArr[idx + 1] = fc.g * life;
+              colArr[idx + 2] = fc.b * life;
+              sizeArr[i] = (0.02 + (1 - prog) * 0.08) * (1 + intensity);
+            }
+            break;
+          }
+          case STATE.BLESSING: {
+            const wp = meta.worldPos;
+            meta.velocity.y -= 1.8 * dt;
+            meta.velocity.multiplyScalar(0.97);
+            meta.velocity.x += (Math.sin(time * 2 + meta.sparklePhase) * 0.2) * dt;
+            meta.velocity.z += (Math.cos(time * 2.5 + meta.sparklePhase) * 0.2) * dt;
+            wp.x += meta.velocity.x * dt;
+            wp.y += meta.velocity.y * dt;
+            wp.z += meta.velocity.z * dt;
+            px = wp.x; py = wp.y; pz = wp.z;
+            const fade = Math.min((time - stateStartTime) / 10, 1);
+            const alpha = Math.max(0.1, 1 - fade * 0.9);
+            const bc = meta.baseColor;
+            colArr[idx] = bc.r * alpha;
+            colArr[idx + 1] = bc.g * alpha;
+            colArr[idx + 2] = bc.b * alpha;
+            sizeArr[i] = 0.01 + (1 - fade) * 0.04;
+            break;
+          }
+        }
+        posArr[idx] = px; posArr[idx + 1] = py; posArr[idx + 2] = pz;
+      }
+      geometry.attributes.position.needsUpdate = true;
+      geometry.attributes.color.needsUpdate = true;
+      geometry.attributes.size.needsUpdate = true;
+    }
+
+    // ==================== 祝福语逻辑 ====================
+    const blessingTexts = [
+      "白头偕老", "早生贵子", "百年好合", "永结同心", "佳偶天成", "琴瑟和鸣", "相敬如宾",
+      "举案齐眉", "花好月圆", "凤凰于飞", "天作之合", "美满家园", "情比金坚", "爱河永浴",
+      "鸾凤和鸣", "连理交枝", "比翼双飞", "伉俪情深", "同心同德", "宜室宜家",
+      "五世其昌", "三星在户", "欢腾彩凤", "瑞应祥麟", "天生一对", "地造一双", "才子佳人",
+      "郎才女貌", "珠联璧合", "情投意合", "如鼓琴瑟", "花开并蒂", "赤绳系足", "红叶题诗",
+      "永浴爱河", "恩意如岳", "知音百年", "爱心永恒", "白首成约", "文定吉祥", "盟结良缘",
+      "缘定三生", "成家之始", "鸳鸯璧合", "文定厥祥", "姻缘相配", "许订终身", "终身之盟",
+      "喜结连理", "福禄鸳鸯", "天缘巧合", "美满良缘", "瓜瓞延绵",
+      "情投意合", "夫唱妇随", "螽斯衍庆", "鸿案相庄", "如鼓琴瑟", "花开并蒂",
+      "赤绳系足", "红叶题诗", "心心相印", "相知相守", "地久天长", "海枯石烂", "同心永结",
+      "爱河永固", "甜蜜如初", "幸福满屋", "温馨岁月", "浪漫一生", "挚爱永恒", "携手共度",
+      "情深似海", "意重如山", "鸾凤和鸣", "琴瑟在御", "岁月静好", "与子偕老", "一生一世",
+      "爱你如初", "宠你到老", "风雨同舟", "同甘共苦", "相亲相爱", "宜其家人", "吉日良辰",
+      "喜气洋洋", "龙凤呈祥", "五世其昌", "三星并耀", "瑞气盈门", "祥云绕屋", "福星高照",
+      "喜从天降", "新婚大喜", "燕尔新婚"
+    ];
+    while (blessingTexts.length < 100) blessingTexts.push("幸福美满" + blessingTexts.length);
+    const shuffled = blessingTexts.slice(0, 100).sort(() => Math.random() - 0.5);
+
+    function show100Blessings() {
+      const blessingLayer = document.getElementById('blessing-layer');
+      blessingLayer.innerHTML = '';
+      shuffled.forEach((text, i) => {
+        const span = document.createElement('span');
+        span.className = 'blessing-item';
+        span.textContent = text;
+        const size = 0.9 + Math.random() * 1.8;
+        span.style.fontSize = `${size}rem`;
+        span.style.left = `${5 + Math.random() * 88}%`;
+        span.style.top = `${5 + Math.random() * 88}%`;
+        span.style.transitionDelay = `${i * 10 + Math.random() * 300}ms`;
+        blessingLayer.appendChild(span);
+        requestAnimationFrame(() => span.classList.add('show'));
+      });
+      document.getElementById('hint').classList.add('fade');
+    }
+
+    function hideAllBlessings() {
+      document.querySelectorAll('.blessing-item').forEach(item => {
+        item.classList.add('hide');
+        item.classList.remove('show');
+      });
+    }
+
+    function showFinalBlessing() {
+      document.getElementById('final-blessing').classList.add('show');
+    }
+
+    // ==================== 动画循环 ====================
+    let lastTime = performance.now() / 1000;
+    let animTime = 0;
+    let musicStarted = false;
+
+    function animate(ts) {
+      requestAnimationFrame(animate);
+      const time = ts / 1000;
+      const dt = Math.min(time - lastTime, 0.1);
+      lastTime = time;
+
+      if (animTime === 0) animTime = time;
+      const totalElapsed = time - animTime;
+
+      // 状态推进
+      if (currentState === STATE.HEART && totalElapsed >= HEART_DUR) {
+        switchState(STATE.RISE, time);
+      } else if (currentState === STATE.RISE && totalElapsed >= HEART_DUR + RISE_DUR) {
+        switchState(STATE.BURST, time);
+      } else if (currentState === STATE.BURST && !blessingTriggered && totalElapsed >= BLESSING_APPEAR_TIME) {
+        show100Blessings();
+        blessingTriggered = true;
+        setTimeout(() => {
+          hideAllBlessings();
+          setTimeout(() => {
+            showFinalBlessing();
+            finalShown = true;
+          }, 700);
+        }, 3000);
+      } else if (currentState === STATE.BURST && totalElapsed >= FINAL_BLESSING_TIME && !finalShown) {
+        showFinalBlessing();
+        finalShown = true;
+      }
+
+      // 音频启动
+      if (!musicStarted && totalElapsed > 0.1) {
+        initAudio();
+        musicStarted = true;
+      }
+
+      updateParticles(time, dt);
+      stars.rotation.y += dt * 0.05;
+      stars.rotation.x += dt * 0.02;
+      renderer.render(scene, camera);
+    }
+
+    // ==================== 响应式处理 ====================
+    function resize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / Math.max(h, 1);
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      material.size = w < 400 ? 0.07 : 0.11;
+      starMat.size = w < 400 ? 0.02 : 0.03;
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 150));
+    resize();
+
+    // ==================== 微信自动播放特殊处理 ====================
+    function handleWeixinAutoPlay() {
+      if (typeof window.WeixinJSBridge === 'function') {
+        window.WeixinJSBridge.invoke('getNetworkType', {}, () => {
+          initAudio();
+          musicStarted = true;
+        });
+      } else {
+        document.addEventListener('WeixinJSBridgeReady', () => {
+          window.WeixinJSBridge.invoke('getNetworkType', {}, () => {
+            initAudio();
+            musicStarted = true;
+          });
+        }, false);
+      }
+    }
+
+    // 判断是否微信环境
+    const isWeixin = /micromessenger/i.test(navigator.userAgent);
+    if (isWeixin) {
+      handleWeixinAutoPlay();
+    }
+
+    // ==================== 启动 ====================
+    requestAnimationFrame(animate);
+    console.log('💗 婚礼祝福已就绪 - 等待《执子之手》响起');
+    console.log(`⏱️ 歌曲时长：${SONG_DURATION}秒`);
+    console.log('🎵 第一章：怦然心动 (0-50s)');
+    console.log('🎵 第二章：情深如海 (50-115s)');
+    console.log('🎵 第三章：爱的绽放 (115-170s)');
+    console.log('🎵 第四章：幸福满屏 (170-190s)');
+    console.log('🎵 最终章：爱的箴言 (190s+)');
+  </script>
+</body>
+</html>
