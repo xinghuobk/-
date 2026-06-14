@@ -70,6 +70,34 @@ class ModelProvider(str, Enum):
     DASHSCOPE = "dashscope"               # 通义千问
 
 
+class SearchSource(str, Enum):
+    """学术搜索来源"""
+    ARXIV = "arxiv"                       # arXiv 预印本
+    SEMANTIC_SCHOLAR = "semantic_scholar" # Semantic Scholar
+    GOOGLE_SCHOLAR = "google_scholar"     # Google Scholar
+    CROSSREF = "crossref"                 # Crossref
+    OPENALEX = "openalex"                 # OpenAlex
+
+
+class ReferenceFormat(str, Enum):
+    """参考文献格式"""
+    BIBTEX = "bibtex"
+    APA = "apa"
+    MLA = "mla"
+    CHICAGO = "chicago"
+    GB7714 = "gb7714"
+
+
+class WritingTask(str, Enum):
+    """写作任务类型"""
+    SUMMARY = "summary"                   # 摘要
+    TRANSLATE = "translate"               # 翻译
+    POLISH = "polish"                     # 润色
+    LITERATURE_REVIEW = "literature_review"  # 文献综述
+    OUTLINE = "outline"                   # 大纲
+    CITATION = "citation"                 # 引用格式化
+
+
 # ============================================================
 # 配置模型
 # ============================================================
@@ -242,3 +270,137 @@ class DebateState(BaseModel):
     current_phase: DebatePhase = DebatePhase.TOPIC_ANALYSIS
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
+
+
+# ============================================================
+# 学术论文元数据与搜索
+# ============================================================
+
+class PaperMeta(BaseModel):
+    """论文元数据"""
+    model_config = ConfigDict(use_enum_values=True)
+
+    title: str = Field(..., description="论文标题")
+    authors: List[str] = Field(default_factory=list, description="作者列表")
+    abstract: Optional[str] = Field(default=None, description="摘要")
+    year: Optional[int] = Field(default=None, description="发表年份")
+    venue: Optional[str] = Field(default=None, description="期刊/会议名称")
+    pdf_url: Optional[str] = Field(default=None, description="PDF 下载链接")
+    doi: Optional[str] = Field(default=None, description="DOI 编号")
+    arxiv_id: Optional[str] = Field(default=None, description="arXiv 编号")
+    url: List[str] = Field(default_factory=list, description="相关链接")
+    tags: List[str] = Field(default_factory=list, description="标签/关键词")
+    citation_count: Optional[int] = Field(default=None, description="被引用次数")
+    source: Optional[SearchSource] = Field(default=None, description="搜索来源")
+    id: Optional[str] = Field(default=None, description="来源平台内部 ID")
+
+    def model_dump_bibtex(self) -> str:
+        """导出为 BibTeX 字符串"""
+        key = self.doi or self.arxiv_id or f"paper{self.year or ''}"
+        authors_str = " and ".join(self.authors) if self.authors else ""
+        lines = [f"@article{{{key},"]
+        if self.title:
+            lines.append(f"  title = {{{self.title}}},")
+        if authors_str:
+            lines.append(f"  author = {{{authors_str}}},")
+        if self.year:
+            lines.append(f"  year = {{{self.year}}},")
+        if self.venue:
+            lines.append(f"  journal = {{{self.venue}}},")
+        if self.doi:
+            lines.append(f"  doi = {{{self.doi}}},")
+        if self.arxiv_id:
+            lines.append(f"  eprint = {{{self.arxiv_id}}},")
+        if self.pdf_url:
+            lines.append(f"  url = {{{self.pdf_url}}},")
+        lines.append("}")
+        return "\n".join(lines)
+
+
+class SearchQuery(BaseModel):
+    """学术搜索查询"""
+    model_config = ConfigDict(use_enum_values=True)
+
+    keyword: str = Field(..., description="关键词")
+    year_min: Optional[int] = Field(default=None, description="起始年份")
+    year_max: Optional[int] = Field(default=None, description="结束年份")
+    venue: Optional[str] = Field(default=None, description="目标期刊/会议")
+    max_results: int = Field(default=10, ge=1, le=200, description="最大返回条数")
+    sources: List[SearchSource] = Field(default_factory=list, description="搜索来源列表")
+
+
+class SearchResult(BaseModel):
+    """学术搜索结果"""
+    total_count: int = Field(..., description="命中总数")
+    papers: List[PaperMeta] = Field(default_factory=list, description="论文列表")
+    query: SearchQuery = Field(..., description="原始查询")
+    used_time: float = Field(default=0.0, ge=0.0, description="耗时（秒）")
+
+
+# ============================================================
+# PDF 解析
+# ============================================================
+
+class PDFPage(BaseModel):
+    """PDF 单页内容"""
+    page_num: int = Field(..., ge=1, description="页码")
+    text: str = Field(default="", description="页面文本")
+    images_count: int = Field(default=0, ge=0, description="页面图像数量")
+
+
+class PDFParseResult(BaseModel):
+    """PDF 解析结果"""
+    pages: List[PDFPage] = Field(default_factory=list, description="各页内容")
+    full_text: Optional[str] = Field(default=None, description="全文")
+    summary: Optional[str] = Field(default=None, description="论文摘要")
+    keywords: List[str] = Field(default_factory=list, description="关键词")
+    sections: Dict[str, str] = Field(default_factory=dict, description="章节 -> 章节内容")
+    tables: List[str] = Field(default_factory=list, description="表格文本")
+    figures: List[str] = Field(default_factory=list, description="图注文本")
+    references: List[str] = Field(default_factory=list, description="参考文献列表")
+    metadata: Optional[PaperMeta] = Field(default=None, description="论文元数据")
+    parse_time: float = Field(default=0.0, ge=0.0, description="解析耗时（秒）")
+
+
+# ============================================================
+# 参考文献管理
+# ============================================================
+
+class BibEntry(BaseModel):
+    """BibTeX 条目"""
+    key: str = Field(..., description="引用键（cite key）")
+    entry_type: str = Field(default="article", description="条目类型，如 article/book")
+    fields: Dict[str, str] = Field(default_factory=dict, description="字段键值对")
+    raw: str = Field(default="", description="原始 BibTeX 字符串")
+
+
+class ReferenceManager(BaseModel):
+    """参考文献管理器"""
+    entries: List[BibEntry] = Field(default_factory=list, description="BibTeX 条目列表")
+    source_path: Optional[str] = Field(default=None, description="来源文件路径")
+
+
+# ============================================================
+# 写作任务
+# ============================================================
+
+class WritingRequest(BaseModel):
+    """写作任务请求"""
+    model_config = ConfigDict(use_enum_values=True)
+
+    task_type: WritingTask = Field(..., description="任务类型")
+    input_text: str = Field(..., description="待处理文本")
+    context: Optional[str] = Field(default=None, description="背景信息/上下文")
+    target_language: str = Field(default="zh-CN", description="目标语言")
+    model_name: Optional[str] = Field(default=None, description="使用的模型名")
+    extra_args: Dict[str, Any] = Field(default_factory=dict, description="额外参数")
+
+
+class WritingResponse(BaseModel):
+    """写作任务响应"""
+    task_type: WritingTask = Field(..., description="任务类型")
+    original: str = Field(..., description="原始输入文本")
+    output: str = Field(..., description="生成输出文本")
+    model_name: Optional[str] = Field(default=None, description="使用的模型名")
+    used_time: float = Field(default=0.0, ge=0.0, description="耗时（秒）")
+    citations: List[str] = Field(default_factory=list, description="相关引用")

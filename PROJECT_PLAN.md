@@ -141,3 +141,75 @@ DASHSCOPE_API_KEY=sk-xxx          # 通义千问
 ```
 
 当前阶段保持最小改动，等环境与目标用例确认后再进入具体编码。
+
+---
+
+## 8. 项目实现进度
+
+以下为项目各核心能力的当前落地状态：
+
+| 模块 | 说明 | 已完成 | 待完成 |
+|------|------|--------|--------|
+| 统一文献检索（engine） | 多源并发、去重、按引用/年份排序 | ✅ | 增加 Google Scholar / OpenAlex 接入，查询结果缓存 |
+| arXiv 客户端 | Atom XML 解析、离线 mock | ✅ | 按作者 / 分类检索 |
+| Semantic Scholar 客户端 | Graph API 论文搜索 | ✅ | 引用/被引网络可视化 |
+| Crossref 客户端 | REST API 元数据查询 | ✅ | DOI 元数据反查接口 |
+| PDF 解析（PDFParser） | 文本提取、章节识别、表格图注、元数据推断 | ✅ | marker / nougat 集成以提升公式与扫描 PDF 质量 |
+| PDF 文本清理工具 | 连字符、页眉页脚、摘要抽取 | ✅ | 中文论文专有清洗规则 |
+| BibTeX 管理器 | 解析、保存、搜索、APA / GB7714 导出 | ✅ | Zotero 双向同步（pyzotero） |
+| AcademicWriter | 摘要、翻译、润色、综述、大纲、引用格式化 | ✅ | 接入真实 OpenAI / dashscope SDK，支持流式输出 |
+| Prompt 模板 | 五类中英混写模板 | ✅ | 按领域定制模板（医学、法律、CS） |
+| 向量检索 / RAG | — | ❌ | ChromaDB / FAISS + sentence-transformers 初版 |
+| 知识图谱 / 引用网络 | — | ❌ | NetworkX 绘制引用图、度中心性分析 |
+| 多智能体辩论流程 | （仅 schemas） | ⏳ | LangGraph 驱动的 Agent 流程实现 |
+| FastAPI 服务端 | — | ⏳ | `backend/app.py` 路由实现与鉴权 |
+| Typer CLI | — | ⏳ | `src/__main__.py` 子命令实现（search/parse/reference/writer） |
+
+**图例**：`✅` 已有可运行实现，`⏳` 仅定义模型/接口骨架，`❌` 未开始。
+
+---
+
+## 9. API 接口一览
+
+> 接口以 FastAPI 实现，所有请求/响应均使用 `backend/models/schemas.py` 中的 Pydantic 模型。路由定义将集中在 `backend/app.py`（如尚未创建，可按下列签名快速落地）。
+
+| 方法 | 路径 | 请求体 / 参数 | 返回体 | 说明 |
+|------|------|----------------|--------|------|
+| `GET`  | `/health` | — | `{"status":"ok","version":"..."}` | 健康检查，用于监控 |
+| `POST` | `/api/search` | `SearchQuery`（`keyword`、`max_results`、`sources`、`year_min`、`year_max`、`venue`） | `SearchResult`（`total_count`、`papers`、`query`、`used_time`） | 多源统一文献检索 |
+| `GET`  | `/api/search` | query 传参：`keyword`、`sources`（逗号分隔）、`max_results`、`year_min`、`year_max` | `SearchResult` | GET 版检索接口，便于浏览器调试 |
+| `POST` | `/api/parse/pdf` | multipart form：`file`（PDF），query：`extract_sections=true/false` | `PDFParseResult`（`pages`、`sections`、`references`、`metadata`、`keywords`） | 上传 PDF 并解析为结构化 JSON |
+| `POST` | `/api/reference/bibtex/parse` | multipart form：`file`（.bib）或 JSON `{"text":"...","search":""}` | `{"entries": [...],"count":int}` | 解析 BibTeX 并可选按关键字搜索 |
+| `POST` | `/api/reference/format` | JSON `{"key":"...","fields":{...},"format":"bibtex\|apa\|gb7714"}` | `{"content": "..."}` | 按指定格式格式化引用 |
+| `POST` | `/api/writer/summarize` | `WritingRequest`（`input_text`、`max_sentences`、`model_name`） | `WritingResponse`（`content`、`model_name`、`used_time`） | 生成学术摘要 |
+| `POST` | `/api/writer/translate` | `WritingRequest`（`input_text`、`target_lang`） | `WritingResponse` | 学术翻译 |
+| `POST` | `/api/writer/polish` | `WritingRequest`（`input_text`、`extra_args.style`） | `WritingResponse` | 段落润色 |
+| `POST` | `/api/writer/literature-review` | JSON `{"topic":"...","paper_summaries":[...],"model_name":""}` | `WritingResponse` | 基于多篇摘要生成文献综述 |
+| `POST` | `/api/writer/outline` | JSON `{"topic":"...","sections":6,"model_name":""}` | `WritingResponse` | 生成论文大纲 |
+| `POST` | `/api/writer/citation` | JSON `{"paper":{...},"format":"bibtex\|apa\|gb7714"}` | `WritingResponse` | 论文元数据 → 引用字符串（本地实现，免 API） |
+| `GET`  | `/api/models` | — | `[{"provider":"openai","models":[...]},...]` | 列出当前可用的 LLM 提供商与模型 |
+
+> **设计约定**：所有 POST 接口的 `WritingRequest` 遵循 `backend.models.schemas.WritingRequest` 的字段名；`SearchSource` / `ReferenceFormat` 等枚举值直接传入字符串字面量（如 `"arxiv"`、`"semantic_scholar"`、`"crossref"`、`"bibtex"`、`"apa"`、`"gb7714"`）。
+
+---
+
+## 10. CLI 命令一览
+
+CLI 使用 `Typer` + `Rich` 实现，统一入口为 `python -m src`（建议在 `src/__main__.py` 中组装子命令）。下表列出计划中的全部子命令及其常用参数：
+
+| 子命令 | 子子命令 | 主要参数 | 输出 | 说明 |
+|--------|----------|----------|------|------|
+| `search` | — | `keyword`、`--sources`（arxiv/semantic_scholar/crossref）、`--max-results N`、`--year-min YYYY`、`--year-max YYYY`、`--output PATH` | 终端表格 / JSON 文件 | 多源文献检索 |
+| `parse` | `pdf` | `PDF_PATH`、`--output PATH`、`--sections`、`--tables`、`--figures`、`--include-text` | JSON / Markdown | 解析单篇 PDF |
+| `reference` | `parse` | `BIB_PATH`、`--search KEYWORD`、`--format bibtex\|apa\|gb7714` | 终端表格 / 文件 | 解析并导出 BibTeX 条目 |
+| `reference` | `format` | `--title`、`--authors "a;b"`、`--year`、`--journal`、`--format bibtex\|apa\|gb7714` | 引用字符串 | 按元数据直接生成引用 |
+| `writer` | `summarize` | `--input`（文本文件或 `-`）、`--output PATH`、`--max-sentences 5`、`--provider mock\|openai\|dashscope`、`--model qwen-max` | Markdown 摘要文件 | 生成学术摘要 |
+| `writer` | `translate` | `--input`、`--output`、`--target-lang zh-CN\|en`、`--provider`、`--model` | 翻译后的文本文件 | 学术翻译 |
+| `writer` | `polish` | `--input`、`--output`、`--style academic\|clear\|fluent`、`--provider`、`--model` | 润色后的文本文件 | 段落润色（含 DIFF） |
+| `writer` | `literature-review` | `--topic`、`--summaries FILE1 FILE2 ...`、`--output`、`--provider`、`--model` | Markdown 综述 | 多篇摘要 → 文献综述 |
+| `writer` | `outline` | `--topic`、`--sections 6`、`--output`、`--provider`、`--model` | Markdown 大纲 | 生成论文大纲 |
+| `writer` | `citation` | `--title`、`--authors "a;b"`、`--year`、`--journal`、`--format bibtex\|apa\|gb7714` | 引用字符串 | 纯本地实现，无需 API Key |
+| `serve` | — | `--host 0.0.0.0`、`--port 8000`、`--reload` | 启动 FastAPI 进程 | 启动后端服务 |
+| `version` | — | — | `Academic Paper Toolkit v0.1.0` | 版本信息 |
+
+> **使用提示**：所有子命令均支持 `-h/--help` 查看完整参数说明；对文件路径支持 `~` 展开与相对路径解析（由 `src/utils/io.py` 中的 `ensure_dir` 辅助）。如需接入真实 LLM，请在 `.env` 中配置 `OPENAI_API_KEY` 或 `DASHSCOPE_API_KEY`，并给 `--provider` 传入对应值。
