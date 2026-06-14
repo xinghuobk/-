@@ -1,0 +1,96 @@
+# 🔒 Python 专用的
+# Python 相关项目
+#
+# ==============================================================
+
+# ----- Python 编译文件 -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ----- 虚拟环境 -----
+.venv/
+venv/
+ENV/
+env/
+.venv*/
+.venv3/
+
+# ----- 环境变量与密钥 -----
+.env
+.env.local
+.env.*
+!.env.example
+
+# ----- 分发与打包 -----
+__pycache__/
+*.egg-info/
+.installed.cfg
+*.egg
+dist/
+build/
+*.tar.gz
+*.whl
+*.zip
+
+# ----- 单元测试与覆盖率 -----
+.pytest_cache/
+.coverage
+.coverage.*
+*.cover
+.hypothesis/
+htmlcov/
+.coverage-report/
+
+# ----- Jupyter Notebook -----
+.ipynb_checkpoints/
+.ipython/
+.jupyter/
+
+# ----- IDE 编辑器设置 -----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ----- 系统文件 -----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----- 项目特定忽略 -----
+# 数据文件（如音乐 / 临时数据）
+wdding/
+zhizhizishou.mp3
+宝石Gem、一哩哩一 - 执子之手.mp3
+
+# 临时数据
+data/*.json
+!data/*.yaml
+!data/*.yaml
+!data/domain_kb/
+
+# 实验结果
+experiments/results/
+experiments/outputs/
+
+# 日志与缓存 -----
+*.log
+*.log.*
+logs/
+
+# LangChain / LangGraph 缓存
+.langchain-cache/
+.langgraph-cache/
+
+# 其他
+*.bak
+*.tmp
+.cache/
+
+# ==============================================================
+# END OF GITIGNORE
+# ==============================================================
