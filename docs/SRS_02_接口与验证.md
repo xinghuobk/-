@@ -66,6 +66,8 @@ OPTIONS:
   --speakers INT        每方 Speaker 数               [默认: 2]
   --enable-poi / --no-poi     是否启用 POI 段间质询  [默认: enable]
   --enable-review / --no-review  是否启用审理阶段     [默认: enable]
+  --moderator-strictness 主持人严格度 loose|normal|strict [默认: normal]
+  --max-total-seconds INT  Phase 1 总时长上限（秒）  [默认: 1800]
   --save PATH            输出目录，保存裁决书/状态    [默认: data/runs/{auto_id}/]
   --format FMT           裁决书格式: html|md|json|all [默认: all]
   --token-budget INT     单次运行 token 预算，超限告警
@@ -126,8 +128,8 @@ Content-Type: application/json
 {
   "problem": "问题文本（必填，10-1000字符）",
   "problem_type": "auto",     // auto|fact|decision|innovation|open
-  "config": {                 // （可选）覆盖默认配置
-    "model_provider": "mock", // mock|openai|dashscope
+  "config": {                 # （可选）覆盖默认配置
+    "model_provider": "mock", # mock|openai|dashscope
     "model_name": "mock-model",
     "temperature": 0.7,
     "max_rounds": 5,
@@ -135,6 +137,8 @@ Content-Type: application/json
     "enable_poi": true,
     "enable_review_phase": true,
     "evidence_brief_size": 25,
+    "moderator_strictness": "normal",  # loose|normal|strict
+    "max_total_seconds": 1800,         # Phase 1 总时长上限
     "domain_kb_path": null
   },
   "options": {                // （可选）运行参数
@@ -241,6 +245,7 @@ src.knowledge.domain_kb.load(path: str) -> DomainKB
 
 src.debate.coach.plan(problem: str, brief: EvidenceBrief, side: str) -> CoachPlan
 src.debate.speaker.speak(problem: str, brief: EvidenceBrief, plan: CoachPlan, speaker_id: str) -> Argument
+src.debate.moderator.run_phase(brief: EvidenceBrief, speakers: List[Speaker], coaches: List[Coach], config: ModeratorConfig) -> DebateSummary  # ★ Moderator 主入口
 src.debate.poi_engine.query(argument: Argument, brief: EvidenceBrief, opponent_id: str) -> POIInteraction
 src.debate.workflow.run(problem: str, brief: EvidenceBrief, config: DebateConfig) -> DebateState
 
@@ -370,11 +375,20 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 |:---|:---|:---|
 | F-11 | Coach 规划 | 正反双方 Coach 产出结构化计划（含主题焦点 / 证据分配 / 策略） |
 | F-12 | Speaker 发言 | 每名 Speaker 每次发言 150-400 tokens，结构清晰 |
+| F-12.1 | 时间片约束 | 单条发言 token 数超过 `max_tokens_per_turn` 时被截断 |
 | F-13 | 证据引用验证 | 全部论点的 `evidence_refs` 均指向实际存在的 EvidenceItem ID |
 | F-14 | 论点索引完整性 | 辩论结束后，`ArgumentIndex.arguments` 非空且每条有唯一 id |
+| F-14.1 | 论点去重 | 构造两条几乎相同的论点，Moderator 标记第二条为 duplicate，且第二条不出现在 ArgumentIndex 中 |
+| F-14.2 | 主题漂移检测 | 注入 5 条明显偏离主题的发言，Moderator 检测到 ≥ 4 条（在 normal/strict 模式） |
+| F-14.3 | Moderator 警告系统 | 每条违规发言都生成 `ModeratorWarning`，包含 speaker_id / type / message |
+| F-14.4 | DebateSummary 格式合规 | 产出 `DebateSummary` 模型，含 key_arguments / phase_durations / warnings / total_duration |
 | F-15 | POI 触发机制 | 对 ≥ 30% 的高风险论点触发 POI；响应与质询内容相关（人工评估或关键词重合度） |
+| F-15.1 | POI 批准控制 | 在无 POI 的阶段（如 closing_statements），所有 POI 请求被自动拒绝 |
 | F-16 | 问题漂移检测 | 注入 5 条明确偏离主题的发言，Coach 检测到 ≥ 4 条 |
+| F-16.1 | Moderator 状态机正确性 | 5 个标准配置运行，状态均按 OPENING → CROSS_EXAM → FREE_DEBATE → CLOSING → DONE 顺序迁移，无跳阶段或死循环 |
+| F-16.2 | 强制超时终止 | 配置 `max_total_seconds = 10`，10 秒内 Phase 1 必须终止并产出 DebateSummary（即使未完成所有阶段） |
 | F-17 | 辩论自适应终止 | 对于简单问题，实际轮数 ≤ 配置 `max_rounds` |
+| F-17.1 | ModeratorConfig 可配置性 | 使用 FAST vs DEEP 两种不同配置运行同一问题，轮数和耗时差异 ≥ 2× |
 
 #### 10.1.3 Phase 2.1 审理引擎验收
 
@@ -382,7 +396,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 |:---|:---|:---|
 | F-21 | 检察官漏洞识别 | 在人工设计的含 10 处缺陷的测试集中，检出率 ≥ 70% |
 | F-22 | 辩护律师回应覆盖 | 对 ≥ 80% 检察官指出的漏洞给出实质回应（非空泛） |
-| F-23 | 审理独立性 | 审理阶段 Agent 不访问辩论发言原文（代码审查：Prompt 模板仅包含结构化索引） |
+| F-23 | 审理独立性 | 审理阶段 Agent 不访问辩论发言原文（代码审查：Prompt 模板仅包含结构化索引 + Moderator 产出的 DebateSummary） |
 | F-24 | ReviewReport 格式合规 | 输出符合 ReviewReport 模型；含 5 个 issue_type 的各类样本 |
 
 #### 10.1.4 Phase 2.2 裁决引擎验收
@@ -411,8 +425,10 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | 编号 | 验收项 | 通过标准 |
 |:---|:---|:---|
 | F-51 | CLI 子命令完整性 | `parajudge run/evidence/debate/review/judge/config/list/view/benchmark --help` 均无异常 |
-| F-52 | CLI 端到端 | `parajudge run "测试问题" --provider mock --max-rounds 2` ≤ 30 秒完成，产出裁决书 |
+| F-52 | CLI 端到端 | `parajudge run "测试问题" --provider mock --max-rounds 2 --moderator-strictness normal` ≤ 30 秒完成，产出裁决书；`data/runs/{id}/state.json` 含 DebateSummary 与 Moderator warnings |
+| F-52.1 | Moderator 配置开关 | `--moderator-strictness loose|normal|strict` 三档在同一问题上产生不同数量的 warnings，strict 最严格 |
 | F-53 | API 健康检查 | `curl /health` → HTTP 200，含 version 与 service 状态 |
+| F-53.1 | Moderator 状态接口 | `GET /api/v1/parajudge/task/{id}` 返回的 state 中包含 `current_phase` 和 `phase_durations` |
 | F-54 | API 异步任务 | `POST /run` → 返回 task_id；轮询 `GET /task/{id}` → 状态推进正确 → 完成后 `GET /report.html` 正常返回 |
 | F-55 | API 错误处理 | 非法参数 → HTTP 422；非法 task_id → HTTP 404；LLM 全部失败 → HTTP 503 |
 
@@ -429,7 +445,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | NF-07 | 类型注解覆盖率 | ≥ 80% 公共函数有完整签名注解 | `mypy src/ --ignore-missing-imports` 辅助检查 |
 | NF-08 | 单元测试覆盖率 | ≥ 50% 核心代码；Phase 2.2 裁决逻辑 ≥ 70% | `pytest --cov=src --cov-report=html` |
 | NF-09 | 敏感信息保护 | 代码库中 grep `api[_-]?key\|sk-\|das` 无任何真实 token 命中 | 脚本 + 人工抽查 |
-| NF-10 | 可复现性（Mock Provider 10 次） | 10 次运行输出 verdict 文本完全一致 | 脚本循环运行 + diff |
+| NF-10 | 可复现性（Mock Provider 10 次） | 10 次运行输出 verdict 文本完全一致；Phase 1 的 `phase_durations` 顺序一致，Moderator warnings 内容和数量一致 | 脚本循环运行 + diff |
 
 ### 10.3 端到端验收场景（用例测试）
 
@@ -528,6 +544,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 │   │   ├── agent_base.py               # ParaJudgeAgent 基类（RunnableSerializable）
 │   │   ├── coach.py                    # Coach（正方/反方规划）
 │   │   ├── speaker.py                  # Speaker Agent
+│   │   ├── moderator.py                # ★ 主持人 Moderator（状态机 + 时间片 + 质量守门）
 │   │   ├── poi_engine.py               # Point-of-Information 段间质询
 │   │   ├── evidence_closure.py         # 证据闭包与引用验证
 │   │   ├── argument_index.py           # 论点索引维护 + 漂移检测
@@ -665,6 +682,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | `src/debate/agent_base.py` | - | P0 | 0.5 | providers |
 | `src/debate/coach.py` | - | P0 | 1.0 | agent_base + evidence |
 | `src/debate/speaker.py` | - | P0 | 1.0 | coach |
+| `src/debate/moderator.py` | - | P0 | 0.8 | coach+speaker+argument_index |
 | `src/debate/evidence_closure.py` | - | P0 | 0.5 | speaker |
 | `src/debate/argument_index.py` | - | P0 | 0.5 | speaker |
 | `src/debate/workflow.py` (Phase 1 Graph) | - | P0 | 1.0 | coach+speaker |
@@ -692,7 +710,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | 里程碑 | 时间 | 交付物 | 通过标准 |
 |:---|:---|:---|:---|
 | **M1: Week 1-2** | 第 1-2 周 | Pydantic 模型扩展 + LLM Provider + Phase 0（证据构建） | 可运行 `parajudge evidence "问题"` |
-| **M2: Week 3-5** | 第 3-5 周 | Phase 1（辩论引擎核心 Coach+Speaker） | 可运行 `parajudge debate` |
+| **M2: Week 3-5** | 第 3-5 周 | Phase 1（辩论引擎核心 Coach+Speaker+Moderator） | 可运行 `parajudge debate`；Moderator 状态机 + 质量守门 + DebateSummary 完整产出 |
 | **M3: Week 6-7** | 第 6-7 周 | Phase 2.1（审理引擎）+ Phase 2.2（裁决引擎基础版） | 可跑通端到端 `parajudge run`（Mock Provider） |
 | **M4: Week 8** | 第 8 周 | CLI + API 完整打磨 + 裁决书 HTML | `parajudge run` 可交互使用；API 文档可浏览 |
 | **M5: Week 9-10** | 第 9-10 周 | P1 增强：POI、创新保护、Domain KB | 端到端测试 5 个场景均通过 |

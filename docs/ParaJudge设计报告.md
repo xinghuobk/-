@@ -96,6 +96,13 @@
 | **FR2** | 证据检索与构建 Evidence Brief | 对用户问题进行关键词抽取 → 多源检索（arXiv/S2/Crossref）→ 去重与排序 → 生成结构化证据包 | P0 | 与现有 `src.search` 模块集成；验证 10 个问题的证据覆盖率 |
 | **FR3** | 问题类型识别 | 自动识别问题类型（事实型/决策型/创新型/开放型） | P1 | 基于关键词+LLM判断的混合分类器 |
 | **FR4** | 团队辩论引擎 | 正方/反方各含 1 名教练（不对外发言，负责战术设计与证据分配）+ 2-3 名辩手（轮流发言，支持 POI） | P0 | 端到端测试，验证辩论产物结构化输出 |
+| **FR4.1** | 主持人 Moderator 角色 | 中立第三方角色，持有辩论状态机，负责阶段切换、时间片管理、发言秩序、POI 批准、质量守门 | P0 | 端到端测试，验证 Moderator 状态机驱动完整辩论流程 |
+| **FR4.2** | 辩论阶段状态机 | 定义 OPENING_STATEMENTS / CROSS_EXAMINATION / FREE_DEBATE / CLOSING_STATEMENTS / DONE 五个阶段，由 Moderator 驱动自动切换 | P0 | 日志确认各阶段按预期推进，无死循环 |
+| **FR4.3** | 时间片与轮数管理 | 每个发言有 max_tokens + max_seconds 限制；Phase 1 有 max_total_seconds 总时长上限 | P0 | 超时触发强制终止且不影响后续阶段 |
+| **FR4.4** | POI 批准与拒绝 | Moderator 判断是否允许 POI（基于阶段 + 发言内容风险评分） | P1 | ≥30% 的高风险论点被批准发起 POI |
+| **FR4.5** | 论点去重与质量守门 | Moderator 检查重复论点（基于 ArgumentIndex 相似度）和主题漂移，对违规发言给出警告并阻止其写入索引 | P1 | 注入 5 条偏离主题的发言，检出 ≥4 条 |
+| **FR4.6** | Moderator 配置驱动 | 不同辩论场景（快速辩论 / 深度辩论）通过不同 `ModeratorConfig` 实现，无需改动代码 | P1 | 2 种不同配置对同一问题产生不同的阶段轮数 |
+| **FR4.7** | 辩论总结输出 | Phase 1 结束时，Moderator 产出结构化 `DebateSummary`（核心论点 / 阶段耗时 / 警告记录），供 Phase 2.1 审理消费 | P0 | DebateSummary 被 ReviewWorkflow 正确读取 |
 | **FR5** | POI 段间质询 | 在辩手发言中段，对方可发起简短质询，发言人必须回应 | P0 | 触发 POI 的规则引擎 + 人工评估有效性 |
 | **FR6** | 证据闭包与引用验证 | 所有论点必须引用 Evidence Brief 中的证据条目；自动验证引用完整性和来源真实性 | P0 | 对所有论点执行引用一致性检查 |
 | **FR7** | 论点索引系统 | 自动维护"论点→证据→反论点"的结构化索引 | P0 | 状态模型验证 |
@@ -134,6 +141,17 @@
 - `PrincipleItem` / `CaseItem` / `DomainKB`：原则库与案例库
 - `Argument` / `ArgumentIndex`：论点与论点索引
 - `POIInteraction`：POI 交互记录
+
+**★ Moderator 相关模型（新增）**：
+
+| 模型 | 说明 | 核心字段 |
+|:---|:---|:---|
+| `ModeratorConfig` | 主持人配置（驱动辩论节奏） | `opening_max_rounds`, `cross_exam_max_rounds`, `free_debate_max_turns`, `closing_max_rounds`, `enable_poi`, `timebox_config`, `strictness` |
+| `TimeboxConfig` | 时间片配置（嵌套在 ModeratorConfig 中） | `max_tokens_per_turn`, `max_seconds_per_turn`, `max_total_seconds`, `poi_max_per_phase` |
+| `DebatePhase` (扩展 Enum) | 辩论阶段枚举（由 Moderator 持有） | `IDLE`, `OPENING_STATEMENTS`, `CROSS_EXAMINATION`, `FREE_DEBATE`, `CLOSING_STATEMENTS`, `DONE` |
+| `TurnRequest` | 单个辩手发言请求 | `speaker_id`, `phase`, `timebox_limit`, `round_index` |
+| `ModeratorWarning` | 警告记录（用于审计） | `speaker_id`, `warning_type` (duplicate/off_topic/timeout), `message`, `timestamp` |
+| `DebateSummary` | Phase 1 产出（供 Phase 2.1 消费） | `key_arguments`, `phase_durations`, `warnings`, `total_duration`, `argument_index_ref` |
 - `JudgeReport` / `FinalVerdict`：法官报告与最终裁决
 - `UncertaintyAnnotation`：不确定性标注
 
@@ -149,6 +167,153 @@
 | **C6** | Provider 兼容层 | 支持 mock/openai/dashscope；扩展 Provider 不影响业务逻辑 |
 
 ---
+
+## 4.5 Moderator 主持人角色设计（★ 新增角色）
+
+### 4.5.1 设计动机与角色定位
+
+在原有「Coach + Speaker」双边辩论设计中，存在以下问题：
+
+1. **流程管理与内容产出职责混淆**：Coach 同时负责战术设计和催流程，导致 Prompt 臃肿、行为不可预测
+2. **时间失控风险**：无全局时间片约束，单轮辩论可能无限循环，Token 成本不可控
+3. **POI 秩序缺失**：谁来决定"此论点是否值得发起 POI"，若由辩手自行决定会导致滥用
+4. **违规内容无守门**：重复发言、跑题、无证据论点缺乏独立检查机制，污染 ArgumentIndex
+
+**Moderator 的定位**：
+
+> 辩论流程的「状态机持有者 + 节拍器 + 质量守门员」。它本身不产出论点，不持立场。它的目标函数是「让辩论以受控、有序、符合配置的方式完成」。
+
+### 4.5.2 角色协作关系图
+
+```
+┌──────────────┐  1: run_phase1(config, evidence)   ┌──────────────┐
+│ Orchestrator │ ─────────────────────────────────▶ │  Moderator   │
+│  (阶段总协调) │                                    │  (主持人)     │
+└──────────────┘                                    └──┬───────┬───┘
+            ▲          2: DebateSummary               │         │
+            └─────────────────────────────────────────┘         │
+                                                                  │
+                      ┌────────────────────────────────────────────┼────────────────────────────────────────────┐
+                      │                                            │                                            │
+              1.1 指令│                                    1.2 指令│                                    1.3 读写│
+                      ▼                                            ▼                                            ▼
+              ┌──────────┐                               ┌──────────────┐                              ┌──────────────────┐
+              │ Coach (Pro) │                           │ Speaker Pro  │                              │ ArgumentIndex    │
+              │ Coach (Con) │ ── tactics for speaker ─▶ │ Speaker Con  │ ◀─ 3: record argument ── │ (共享数据结构)   │
+              └──────────┘                               └──────────────┘                              └──────────────────┘
+                                                                   │
+                                                                   ▼ 1.4 可选 POI
+                                                          ┌──────────────────┐
+                                                          │ POI Engine       │
+                                                          │ (质询 + 响应)     │
+                                                          └──────────────────┘
+```
+
+**消息与数据流向说明**：
+
+| 编号 | 消息 | 方向 | 内容 |
+|:---|:---|:---|:---|
+| 1 | `run_phase1()` | Orchestrator → Moderator | 阶段配置 + Evidence Brief |
+| 1.1 | `get_tactics(phase, round)` | Moderator → Coach | 请求当前阶段战术建议（Coach 不对外发言） |
+| 1.2 | `speak(turn_request, tactics, brief)` | Moderator → Speaker | 传入时间片 + 战术 + 证据包；Speaker 产出 Argument |
+| 1.3 | `record_argument(argument)` | Moderator → ArgumentIndex | 写入论点索引（先经过去重 / 主题检查） |
+| 1.4 | `request_poi(argument, opponent)` | Speaker → POI Engine | 由 Moderator 批准/拒绝后执行 |
+| 2 | `DebateSummary` | Moderator → Orchestrator | 阶段总结，供 Phase 2.1 审理消费 |
+
+### 4.5.3 辩论阶段状态机
+
+```
+[IDLE]
+   │  start_debate(ModeratorConfig)
+   ▼
+[OPENING_STATEMENTS]  ── 正反各 opening_max_rounds 轮 ──▶
+   │
+   ▼
+[CROSS_EXAMINATION]   ── 双方 cross_exam_max_rounds 轮 ──▶
+   │
+   ▼
+[FREE_DEBATE]        ── free_debate_max_turns 次切换 OR max_total_seconds ──▶
+   │
+   ▼
+[CLOSING_STATEMENTS] ── 双方各 closing_max_rounds 轮总结 ──▶
+   │
+   ▼
+[DONE]
+   │
+   ▼
+产出 DebateSummary
+```
+
+**阶段切换条件的完整逻辑**（在 `src/debate/moderator.py::_should_advance_phase()` 中实现）：
+
+- **OPENING → CROSS_EXAMINATION**：正反双方均完成 `opening_max_rounds` 次立论
+- **CROSS_EXAMINATION → FREE_DEBATE**：双方各完成 `cross_exam_max_rounds` 轮交叉质询
+- **FREE_DEBATE → CLOSING**：达到 `free_debate_max_turns` **或** `max_total_seconds` 超时（以先到为准）
+- **CLOSING → DONE**：双方各完成 `closing_max_rounds` 轮总结
+- **任意阶段 → DONE**（强制终止）：`max_total_seconds` 全阶段超时
+
+### 4.5.4 质量守门机制（Quality Gate）
+
+Moderator 在每条发言被写入 ArgumentIndex 之前，执行三类轻量级检查：
+
+| 检查项 | 实现方式 | 行为 | 所需 LLM？ |
+|:------|:---|:---|:---|
+| **论点去重** | 计算新发言与 ArgumentIndex 中已有论点的 embedding 相似度 / 关键词重叠度 | 相似度 > 0.85 标记为 duplicate，给出警告 + 拒绝写入 | 可选（轻量 embedding 或纯启发式） |
+| **主题漂移检测** | 新发言与原始问题、Evidence Brief 主题的相关性得分（关键词 + 语义） | 相关性 < 阈值给出 "off_topic" 警告；`strictness=strict` 时拒绝写入 | 可选 |
+| **超时控制** | wall-clock 计时 + token 计数（tiktoken） | 超时发出 warning，截断超 token 部分 | 纯代码，无 LLM |
+| **证据引用验证** | 检查 argument.evidence_refs 中的 ID 是否存在于 EvidenceBrief | 缺失引用标记 "weak_evidence"，不阻止但发出警告 | 纯代码，无 LLM |
+
+**关键原则**：Moderator 的质量守门是「最小成本」的——能通过纯代码（状态、正则、embedding 轻量版）完成的绝不调用 LLM。这样才能保证：(a) 成本可控 (b) 行为可复现 (c) 延迟低。
+
+### 4.5.5 ModeratorConfig 配置示例
+
+```python
+# 快速辩论（~3 分钟，简单问题）
+MODERATOR_CONFIG_FAST = {
+    "opening_max_rounds": 1,
+    "cross_exam_max_rounds": 1,
+    "free_debate_max_turns": 3,
+    "closing_max_rounds": 1,
+    "enable_poi": False,
+    "strictness": "loose",
+    "timebox": {
+        "max_tokens_per_turn": 200,
+        "max_seconds_per_turn": 60,
+        "max_total_seconds": 180,
+    },
+}
+
+# 深度辩论（~20 分钟，复杂问题）
+MODERATOR_CONFIG_DEEP = {
+    "opening_max_rounds": 2,
+    "cross_exam_max_rounds": 3,
+    "free_debate_max_turns": 8,
+    "closing_max_rounds": 1,
+    "enable_poi": True,
+    "strictness": "normal",
+    "timebox": {
+        "max_tokens_per_turn": 400,
+        "max_seconds_per_turn": 120,
+        "max_total_seconds": 1200,
+        "poi_max_per_phase": 3,
+    },
+}
+```
+
+### 4.5.6 与现有模块的关系与变更
+
+| 现有模块 | 变更内容 | 影响范围 |
+|:---|:---|:---|
+| `src/debate/workflow.py` | Phase 1 的驱动者从"Coach/Speaker 循环"改为 Moderator 状态机驱动 | 核心编排逻辑调整，但对外接口 `DebateWorkflow.run()` 签名不变 |
+| `src/debate/moderator.py` | **新增**：`Moderator` 类（状态机 + 质量守门） | 新文件 |
+| `src/debate/argument_index.py` | 新增 `has_similar_argument(embedding, threshold)` 方法 | 扩展现有文件 |
+| `backend/models/schemas.py` | 新增 `ModeratorConfig` / `TimeboxConfig` / `DebatePhase`（扩展）/ `TurnRequest` / `ModeratorWarning` / `DebateSummary` 模型 | 扩展现有文件 |
+| Phase 2.1 ReviewWorkflow | 从消费"原始发言列表"改为消费 `DebateSummary` + `ArgumentIndex` | 对 Phase 2.1 无破坏性变更（结构更清晰） |
+| Phase 2.2 Judgment | 无直接变化（仍然消费 ArgumentIndex + 审理报告） | 无变更 |
+
+---
+
+
 
 ## 五、技术栈规划
 
@@ -173,6 +338,7 @@
 │ │    └─ 证据包构建 (Pydantic)                                   │  │
 │ │                                         ↓                       │  │
 │ │  阶段 1: DebateEngine (辩论)                                  │  │
+│ │    ├─ Moderator (主持人：状态机 + 时间片 + 质量守门)         │  │
 │ │    ├─ 正方 Coach + 正方 Speaker 1/2/3                        │  │
 │ │    ├─ 反方 Coach + 反方 Speaker 1/2/3                        │  │
 │ │    ├─ POI 段间质询引擎                                        │  │
@@ -288,6 +454,7 @@
 │   │   ├── roles.py                # Coach/Speech 角色定义
 │   │   ├── coach.py                # 教练 Agent（战术设计 + 证据分配）
 │   │   ├── speaker.py              # 辩手 Agent（发言 + POI 响应）
+│   │   ├── moderator.py            # 🆕 主持人 Moderator（状态机 + 时间片 + 质量守门）
 │   │   ├── poi_engine.py           # POI 段间质询引擎
 │   │   ├── evidence_closure.py     # 证据闭包与引用验证
 │   │   ├── argument_index.py       # 论点索引维护
@@ -407,7 +574,7 @@
 | 模块 | 主要职责 | 核心类/函数 | 对外接口 |
 |:---|:---|:---|:---|
 | **src.knowledge** | 证据构建、知识库加载、问题识别 | `EvidenceBriefBuilder`, `DomainKBLoader`, `ProblemClassifier` | 提供统一的 `build_evidence_brief(query)` |
-| **src.debate** | 教练-辩手辩论、POI、论点索引 | `Coach`, `Speaker`, `POIEngine`, `EvidenceClosure`, `DebateWorkflow` | `DebateWorkflow.run(problem, evidence_brief)` |
+| **src.debate** | 教练-辩手辩论、POI、论点索引、**Moderator 流程控制** | `Coach`, `Speaker`, `Moderator`, `POIEngine`, `EvidenceClosure`, `DebateWorkflow`, `ArgumentIndex` | `DebateWorkflow.run(problem, evidence_brief)` |
 | **src.review** | 检察官-辩护律师审理 | `Prosecutor`, `DefenseAttorney`, `ReviewWorkflow` | `ReviewWorkflow.run(debate_state, evidence_brief)` |
 | **src.judgment** | 五维法官裁决、推理链生成、报告渲染 | `EvidenceJudge`/`LogicJudge`/`PrincipleJudge`/`CaseJudge`/`InnovationJudge`, `FinalJudge`, `ReasoningChainBuilder`, `ReportGenerator` | `JudgmentWorkflow.run(review_state, evidence_brief, domain_kb, problem_type)` |
 | **src.llm** | LLM Provider 封装、Prompt 管理、Token 统计 | `LLMProvider`, `PromptLibrary`, `TokenCounter` | `generate(role, prompt, **kwargs)` |
@@ -436,6 +603,7 @@
   ├─ src.debate.agent_base：ParaJudge Agent 基类
   ├─ src.debate.coach：正方/反方教练
   ├─ src.debate.speaker：正方/反方辩手
+  ├─ src.debate.moderator：★ 主持人 Moderator（状态机 + 时间片 + 质量守门）
   ├─ src.debate.poi_engine：段间质询机制
   ├─ src.debate.evidence_closure：证据闭包与引用验证
   ├─ src.debate.argument_index：论点索引维护
@@ -483,7 +651,7 @@
 | 里程碑 | 时间 | 交付物 | 验收标准 |
 |:---|:---|:---|:---|
 | **M1** | 第 3 周末 | 基础设施 + 证据与知识库 | 给定 10 个问题，可构建 Evidence Brief；DomainKB YAML 可正常加载 |
-| **M2** | 第 10 周末 | 完整辩论引擎（阶段 1） | 8 个 Agent 端到端工作；输出结构化论点索引 |
+| **M2** | 第 10 周末 | 完整辩论引擎（阶段 1） | 8 个 Agent 端到端工作；Moderator 状态机驱动完整流程；时间片与去重机制生效；输出结构化 `DebateSummary` + `ArgumentIndex` |
 | **M3** | 第 12 周末 | 审理引擎（阶段 2.1） | 审理阶段能在 ≥30% 问题上发现辩论阶段的漏洞或证据缺失 |
 | **M4** | 第 15 周末 | 裁决引擎（阶段 2.2） | 五法官+裁决官完整运行；输出类判决书报告 |
 | **M5** | 第 20 周末 | 评估实验 | 基准数据集完整运行；消融实验结果可复现；与基线对比有显著优势 |
@@ -602,6 +770,9 @@ ParaJudge 并非从零开始，而是**增量增强**当前已有的学术论文
 | **Q8** | 法官权重是否需要根据"问题复杂度"调整？ | A) 固定；B) 基于问题分类动态调整；C) 基于辩论结果自动调整 | B（简单问题减少创新/案例维度权重） |
 | **Q9** | 裁决官的推理链是事后生成还是过程中逐步构建？ | A) 事后（阅读法官报告后一次性生成）；B) 过程中逐步构建 | A（更简单，且可审核） |
 | **Q10** | 阶段间的状态传递使用什么结构？ | A) JSON/字典；B) Pydantic 模型；C) LangGraph StateSchema | B + C（Pydantic 嵌入 LangGraph State 中，既类型安全又可编排） |
+| **Q11** | Moderator 的质量守门应调用 LLM 还是纯规则？ | A) 纯规则（节省成本，可复现）；B) 轻量 LLM（更精确）；C) 混合模式，默认规则，LLM 可选 | C（默认纯规则以保证成本与可复现，strictness=strict 时启用轻量 embedding 语义检查） |
+| **Q12** | Moderator 是否需要持久化其状态？ | A) 仅内存；B) 写入 `DebateSummary`（可复现）；C) 独立 SQLite 文件 | B（状态汇总写入 DebateSummary，便于 Phase 2.1 审计和问题追踪） |
+| **Q13** | 超时发言是强制截断还是仅警告？ | A) 仅警告（保留全部内容）；B) 强制截断（保证时间预算）；C) 根据 strictness 配置 | C（loose 仅警告，normal 截断并警告，strict 直接拒绝） |
 
 ---
 
