@@ -3,13 +3,14 @@
 ## 第 1 部分：引言 + 总体描述 + 功能需求 + 非功能需求 + 数据模型 + 详细技术栈
 
 > **项目代号**：ParaJudge
-> **文档版本**：v1.1
+> **文档版本**：**v1.2**
 > **生成日期**：2026-06-15
 > **设计依据**：基于 259 篇 MAD 领域论文 + 5 篇系统性综述的分析结果
 >
 > **版本历史**：
-> - **v1.1 (2026-06-15)**：新增 FR-310 至 FR-315（Moderator 角色/状态机/质量守门/时间片/POI 批准/DebateSummary/配置驱动）；第 6 部分技术栈扩展为 ADR-006 至 ADR-013 深度选型分析；新增 Moderator 状态图子状态、技术栈风险热图；更新选型对比表
 > - **v1.0 (2026-06-15)**：首版 SRS 发布
+> - **v1.1 (2026-06-15)**：新增 FR-310 至 FR-315（Moderator 角色/状态机/质量守门/时间片/POI 批准/DebateSummary/配置驱动）；第 6 部分技术栈扩展为 ADR-006 至 ADR-013 深度选型分析；新增 Moderator 状态图子状态、技术栈风险热图
+> - **v1.2 (本次)**：引入 **S3（Signal-driven + Structured + Sustainable）统一设计框架**；新增 **T1–T4 四项技术创新点**（AEBG 二部图 / DPP 多样性约束 / KS 检验收敛检测 / DS 证据理论融合）；新增 FR-400 至 FR-405（创新点相关功能需求）与 NF-200 至 NF-205（可解释性/不确定性相关非功能需求）
 
 ---
 
@@ -39,10 +40,15 @@
 **关键特征**：
 - 证据闭包（Evidence Closure）
 - 目标驱动异质性（Objective-Driven Agent Heterogeneity）
-- 检察官-辩护律师审理（Prosecutor-Defense Review）
-- 五维专业化法官裁决（5-Dimension Specialized Judges）
-- 创新保护机制（Innovation Protection）
+- Moderator 主持下的结构化辩论（Phase 1）
+- 检察官-辩护律师审理（Prosecutor-Defense Review, Phase 2.1）
+- 五维专业化法官裁决（5-Dimension Specialized Judges, Phase 2.2）
 - 类判决书推理链输出（Judgment-Style Reasoning Chain）
+
+**v1.2 新增的核心技术创新点**（按 S3 框架组织）：
+- **Signal-driven（信号驱动）**：T1（AEBG 论点-证据二部图，用图信号做质量评分）、T3（KS 检验的统计收敛检测）
+- **Structured（结构化）**：T1（二部图结构）、T4（DS 证据理论融合，输出得分+不确定性+置信区间）
+- **Sustainable（可持续/节算）**：T2（DPP 多样性约束，避免重复论点浪费 token）、T3（KS 检验尽早终止收敛辩论）
 
 ### 1.3 定义与缩略语
 
@@ -53,6 +59,11 @@
 | **POI** | Point of Information，段间质询 |
 | **Evidence Brief** | 辩论前构建的统一证据包（所有辩论必须引用其中条目） |
 | **Domain KB** | 领域知识库（原则库 + 案例库） |
+| **AEBG** | Argument-Evidence Bipartite Graph，论点-证据二部图（T1 创新点） |
+| **DPP** | Determinantal Point Process，行列式点过程（T2 创新点，用于控制论点多样性） |
+| **KS 检验** | Kolmogorov-Smirnov Test，用于检测辩论评分分布是否收敛（T3 创新点） |
+| **DS 证据理论** | Dempster-Shafer Evidence Theory，用于融合多位法官的不确定评分（T4 创新点） |
+| **S3 框架** | Signal-driven + Structured + Sustainable，ParaJudge v1.2 的统一设计框架 |
 
 ---
 
