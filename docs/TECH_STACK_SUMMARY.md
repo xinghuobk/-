@@ -1,0 +1,484 @@
+# ParaJudge 技术栈汇总清单（快速参考）
+
+> **生成日期**: 2026-06-15
+> **文档版本**: v1.0
+> **适用范围**: 开发/部署/运维团队
+
+---
+
+## 目录
+
+1. [一句话概述](#1-一句话概述)
+2. [架构总览图](#2-架构总览图)
+3. [核心技术选型一览](#3-核心技术选型一览)
+4. [按分层的详细清单](#4-按分层的详细清单)
+5. [依赖版本锁定表](#5-依赖版本锁定表)
+6. [新增 vs. 已有模块对比](#6-新增-vs-已有模块对比)
+7. [LangGraph 替代方案评估](#7-langgraph-替代方案评估)
+8. [运行环境要求](#8-运行环境要求)
+9. [启动最小子集](#9-启动最小子集-mvp-stack)
+10. [关键风险与替代](#10-关键风险与替代)
+
+---
+
+## 1. 一句话概述
+
+**ParaJudge** = **Python 3.10+** + **FastAPI** + **Typer CLI** + **LangGraph 编排** + **多 LLM Provider**（OpenAI 兼容 / DashScope / Mock） + **Pydantic v2 数据模型** + **Jinja2 裁决书** + **学术检索 (arXiv/Semantic Scholar/Crossref)** + **YAML 领域知识库** + **JSON 持久化**。
+
+---
+
+## 2. 架构总览图
+
+```
+                        ┌──────────────────────────────────────┐
+                        │          用户 / 调用方                 │
+                        │  ┌─────────┐    ┌──────────────┐   │
+                        │  │   CLI   │    │   REST API   │   │
+                        │  │ (Typer) │    │  (FastAPI)   │   │
+                        │  └────┬────┘    └───────┬──────┘   │
+                        └───────┼─────────────────┼──────────┘
+                                │                 │
+                        ┌───────▼─────────────────▼──────────┐
+                        │          编排层（LangGraph）          │
+                        │  ┌──────────────────────────────┐   │
+                        │  │ StateGraph：                 │   │
+                        │  │  Phase 0 Evidence ──►        │   │
+                        │  │  Phase 1 Debate ────►        │   │
+                        │  │  Phase 2.1 Review ─►         │   │
+                        │  │  Phase 2.2 Judgment (并行)    │   │
+                        │  │  集成 Checkpointer / 异步     │   │
+                        │  └──────────────────────────────┘   │
+                        └───────┬──────────────────────────────┘
+                                │
+                     ┌──────────┼──────────────────────┐
+                     ▼          ▼                      ▼
+              ┌──────────┐ ┌───────────┐        ┌───────────┐
+              │   Agent  │ │   知识层   │        │   外部    │
+              │    层    │ │  (数据模型)│        │   API    │
+              │ ┌──────┐ │ │  Pydantic │        │  arXiv    │
+              │ │ Mock │ │ │   YAML    │        │  SemSch   │
+              │ │ OpenAI│ │ │   JSON    │        │  Crossref │
+              │ │ DashSc│ │ │  DomainKB │        │  LLM API  │
+              │ └──────┘ │ │ EvidenceBr│        │  (OpenAI/ │
+              │  Prompt  │ │ ArgumentIdx│        │  DashScope)│
+              │  Library │ │ JudgeReport│        │           │
+              └──────────┘ └───────────┘        └───────────┘
+```
+
+---
+
+## 3. 核心技术选型一览
+
+| 决策项 | 选择 | 理由 |
+|:---|:---|:---|
+| **编程语言** | Python 3.10+ | 生态成熟，LangChain/LangGraph 原生支持 |
+| **Web 框架** | **FastAPI** 0.111+ | 类型安全、自动文档、异步第一 |
+| **ASGI 服务器** | **uvicorn** (standard 版) | FastAPI 官方推荐 |
+| **CLI** | **Typer** 0.12+ + **rich** 13.7+ | FastAPI 同一团队，argparse 自动生成 |
+| **编排框架** | **LangGraph** 0.2.x（含 `langchain-core` 0.3.x） | **核心框架**：StateGraph/parallel node/Checkpointer，完美契合四阶段辩论设计 |
+| **LLM 适配** | `openai` SDK 1.40+ + `dashscope` 1.20+ | 统一抽象；Mock Provider 零外部依赖 |
+| **数据模型** | **Pydantic v2**（2.9.2） | 类型安全、JSON 序列化、FastAPI 自动文档 |
+| **配置管理** | `pydantic-settings` 2.5.2 + `python-dotenv` 1.0.1 | 支持 `.env` + YAML；类型安全 |
+| **模板引擎** | **Jinja2** 3.1.4 | 裁决书 HTML 渲染（成熟、轻量） |
+| **领域知识库** | **PyYAML** 6.0.2 | 可读的纯文本格式；版本化管理友好 |
+| **HTTP 客户端** | **httpx** 0.27.2（异步） + `requests` 2.32（同步脚本） | 现代；替代传统 requests |
+| **重试机制** | **tenacity** 9.0.0 | 指数退避、可配置重试策略 |
+| **Token 统计** | **tiktoken** 0.7.0 | OpenAI 官方分词器；精确 token 计数 |
+| **学术检索** | `arxiv` 2.1 + `semanticscholar` 0.5 + `crossref-commons` 0.2 | 覆盖主流学术元数据源 |
+| **PDF 解析** | `pymupdf` 1.24 + `pypdf` 5.0 + `pdfplumber` 0.11 | 三种方案互补，覆盖文本/表格/元数据 |
+| **日志** | Python 标准库 `logging` + JSON Formatter | 轻量；无额外依赖 |
+| **持久化** | 文件系统（JSON/YAML） + **SQLite**（可选） | 零运维；Checkpointer 可选择 SQLite |
+| **测试** | **pytest** 8.3.2 + `pytest-asyncio` 0.23.8 | 行业标准，易用 |
+| **代码质量** | **ruff** 0.6.2 | lint + format 一体；纯 Rust 实现，极快 |
+| **容器化（可选）** | Dockerfile（基础镜像 `python:3.12-slim`） | 部署标准化 |
+| **向量库（可选）** | `chromadb` 0.5.0 / `faiss-cpu` 1.8.0 + `langchain-chroma` 0.1.4 | 冷启动快速；实验性使用 |
+| **嵌入（可选）** | `sentence-transformers` 3.0.0 + **numpy** 1.26.4 | 本地语义嵌入，无需外部服务 |
+| **知识图谱（可选）** | `networkx` 3.3 + `matplotlib` 3.8 | 论点关系图可视化 |
+
+---
+
+## 4. 按分层的详细清单
+
+### 4.1 用户接口层
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| REST API | FastAPI + uvicorn[standard] | 0.111.1 / 0.30.6 | JSON 接口 / 异步任务 |
+| 命令行 | Typer + rich | 0.12.5 / 13.7.1 | 交互式 CLI / 彩色输出 |
+| 裁决书前端 | Jinja2 + 静态 HTML | 3.1.4 | HTML 报告渲染 |
+| 文档 | Swagger UI (FastAPI 内置) | - | `GET /docs` 自动生成 |
+
+### 4.2 编排 / Agent 层
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| 工作流编排 | **LangGraph** | 0.2.22 | **核心**：StateGraph + parallel node + Checkpointer |
+| LangChain 核心 | `langchain-core` | 0.3.15 | LangGraph 依赖；Runnable 抽象 |
+| LangChain 主包 | `langchain` | 0.3.10 | Agent 模板、工具函数 |
+| OpenAI 集成 | `langchain-openai` | 0.2.10 | LangChain 与 OpenAI SDK 的桥接 |
+| 社区 Provider | `langchain-community` | 0.3.0 | 扩展第三方服务 |
+| LLM 抽象 | `openai` Python SDK | 1.43.0 | Chat Completions；支持任意兼容端点 |
+| LLM 抽象-备用 | `dashscope` | 1.20+ | 通义千问官方 SDK |
+
+### 4.3 数据 / 知识层
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| 数据模型 | **Pydantic v2** | 2.9.2 | **核心**：全栈类型安全 |
+| 配置管理 | pydantic-settings | 2.5.2 | 类型化配置 |
+| 环境变量 | python-dotenv | 1.0.1 | `.env` 文件加载 |
+| 知识文件 | **PyYAML** | 6.0.2 | DomainKB YAML 加载 |
+| 模板 | **Jinja2** | 3.1.4 | 裁决书 HTML / 邮件报告 |
+| Token 统计 | tiktoken | 0.7.0 | OpenAI 分词器；成本与预算 |
+| 数值工具 | numpy | 1.26.4 | 评估指标与统计 |
+
+### 4.4 基础 / 工具层
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| HTTP 客户端 | httpx | 0.27.2 | 外部 API 的异步/同步请求 |
+| 重试 | tenacity | 9.0.0 | LLM/外部 API 的调用重试 |
+| HTTP(脚本用) | requests | 2.32.3 | CLI/脚本中的简单请求 |
+| 进度条 | tqdm | 4.66.5 | CLI 进度提示 |
+| 终端颜色 | colorama | 0.4.6 | Windows 颜色兼容 |
+
+### 4.5 检索 / 解析 / 引用管理
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| arXiv 检索 | arxiv | 2.1.3 | arXiv API 客户端 |
+| Semantic Scholar | semanticscholar | 0.5.0 | SS API（可选，依赖较重） |
+| Crossref | crossref-commons | 0.2.0 | Crossref（可选） |
+| OpenAlex | pyalex | 0.2+ | OpenAlex（可选） |
+| PDF 解析 | pymupdf | 1.24.10 | 高性能 PDF 提取 |
+| PDF 解析(备选 1) | pypdf | 5.0.0 | 轻量 PDF 提取 |
+| PDF 解析(备选 2) | pdfplumber | 0.11.x | 表格友好 PDF 提取 |
+| 文档处理 | python-docx | 1.1.0 | Word 文档（可选） |
+| HTML → MD | markdownify | 0.13.x | 转换工具 |
+| 网页 / XML 解析 | beautifulsoup4 + lxml | 4.12 / 5.3 | XML / HTML |
+| 参考文献 | pyzotero | 1.5.x | Zotero（可选） |
+| BibTeX | bibtexparser | 1.4.1 | .bib 文件解析 |
+
+### 4.6 测试 / 质量 / 实验
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| 测试框架 | pytest | 8.3.2 | 单元 / 集成测试 |
+| 异步测试 | pytest-asyncio | 0.23.8 | 支持 `async def test_*` |
+| 代码质量 | ruff | 0.6.2 | lint + format（替代 flake8/black/isort） |
+| 类型检查 | mypy（可选） | ≥ 1.10 | 静态类型检查 |
+| 覆盖率 | pytest-cov | 5.x | 覆盖率报告 |
+| 实验数据加载 | (内置脚本) | - | GSM8K / PolitiFact / 自制数据集 |
+
+### 4.7 可选 / 实验性增强
+
+| 组件 | 技术 | 版本 | 用途 |
+|:---|:---|:---|:---|
+| 向量数据库 | chromadb | 0.5.0 | 本地向量索引 |
+| 向量库(备选) | faiss-cpu | 1.8.0 | Meta 的 FAISS（CPU 版） |
+| LangChain Chroma | langchain-chroma | 0.1.4 | LangChain 与 Chroma 集成 |
+| 嵌入模型 | sentence-transformers | 3.0.0 | 本地多语言嵌入 |
+| 关系图可视化 | networkx + matplotlib | 3.3 / 3.8 | 论点关系图 / 评估曲线 |
+
+---
+
+## 5. 依赖版本锁定表（requirements.txt 参考）
+
+### 5.1 核心依赖（必须）
+
+```txt
+# ===== 编排 / 工作流（核心） =====
+langgraph==0.2.22
+langchain==0.3.10
+langchain-core==0.3.15
+langchain-openai==0.2.10
+langchain-community==0.3.0
+
+# ===== 用户接口 =====
+fastapi==0.111.1
+uvicorn[standard]==0.30.6
+typer==0.12.5
+rich==13.7.1
+Jinja2==3.1.4
+
+# ===== 数据模型 / 配置 =====
+pydantic==2.9.2
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+PyYAML==6.0.2
+
+# ===== LLM / Token 计数 =====
+openai==1.43.0
+dashscope==1.20.0
+tiktoken==0.7.0
+
+# ===== HTTP / 网络 =====
+httpx==0.27.2
+requests==2.32.3
+tenacity==9.0.0
+
+# ===== 工具 =====
+tqdm==4.66.5
+colorama==0.4.6
+numpy==1.26.4
+```
+
+### 5.2 扩展依赖（推荐加入 / 可选）
+
+```txt
+# ===== 学术检索 / PDF =====
+arxiv==2.1.3
+# semanticscholar==0.5.0          # 可选
+# crossref-commons==0.2.0         # 可选
+pymupdf==1.24.10
+pypdf==5.0.0
+pdfplumber==0.11.4
+python-docx==1.1.0
+beautifulsoup4==4.12.3
+lxml==5.3.0
+markdownify==0.13.1
+
+# ===== 引用管理 =====
+pyzotero==1.5.26
+bibtexparser==1.4.1
+
+# ===== 实验性（向量 / 知识图谱）=====
+chromadb==0.5.0
+faiss-cpu==1.8.0
+langchain-chroma==0.1.4
+sentence-transformers==3.0.0
+networkx==3.3
+matplotlib==3.8.4
+```
+
+### 5.3 开发依赖
+
+```txt
+# ===== 测试 / 质量 =====
+pytest==8.3.2
+pytest-asyncio==0.23.8
+pytest-cov==5.0.0
+ruff==0.6.2
+mypy==1.11.2                         # 可选（严格类型）
+# pip-audit==2.7.0                   # 可选（安全审计）
+```
+
+---
+
+## 6. 新增 vs. 已有模块对比
+
+### 6.1 模块对照
+
+| 模块 | 代码位置 | 状态 | 依赖 LangGraph? | 备注 |
+|:---|:---|:---|:---|:---|
+| CLI 入口 | `cli.py` | 已有 + 需扩展子命令 | 否 | 新增 `parajudge` 命令组 |
+| API 入口 | `api.py` | 已有 + 需扩展路由 | 否 | 新增 `/api/v1/parajudge/*` |
+| Pydantic 模型 | `backend/models/schemas.py` | 已有 + 需扩展 | 否 | 新增 Evidence/Judge/Review/Reasoning 等模型 |
+| 学术检索 | `src/search/*.py` | **保持不变** | 否 | 由 EvidenceBuilder 调用 |
+| PDF 解析 | `src/parse/*.py` | 保持不变 | 否 | 作为 EvidenceBuilder 辅助工具 |
+| 引用管理 | `src/reference/*.py` | 保持不变 | 否 | BibTeX / 引用格式化 |
+| 写作辅助 | `src/writer/*.py` | 保持不变 | 否 | 裁决书润色可调用 |
+| **EvidenceBuilder** (Phase 0) | `src/knowledge/evidence.py` | **新增**（P0） | 否 | 统一证据包构建 |
+| **ProblemClassifier** | `src/knowledge/classifier.py` | **新增**（P0） | 否 | 问题类型识别 |
+| **DomainKB** | `src/knowledge/domain_kb.py` | **新增**（P1） | 否 | YAML 原则/案例库 |
+| **Agent 基类** | `src/debate/agent_base.py` | **新增**（P0） | **是**（继承 RunnableSerializable） | 所有 Agent 的统一基类 |
+| **Coach** | `src/debate/coach.py` | **新增**（P0） | 是 | 正反双 Coach |
+| **Speaker** | `src/debate/speaker.py` | **新增**（P0） | 是 | 每方 2-3 名 Speaker |
+| **POI Engine** | `src/debate/poi_engine.py` | **新增**（P1） | 是 | 段间质询机制 |
+| **证据闭包** | `src/debate/evidence_closure.py` | **新增**（P0） | 否 | 引用校验逻辑 |
+| **论点索引** | `src/debate/argument_index.py` | **新增**（P0） | 否 | 结构化索引构建 |
+| **辩论工作流** | `src/debate/workflow.py` | **新增**（P0） | **是**（LangGraph 子图） | Phase 1 子图 |
+| **检察官** | `src/review/prosecutor.py` | **新增**（P0） | 是 | 漏洞识别 |
+| **辩护律师** | `src/review/defense.py` | **新增**（P0） | 是 | 最佳辩护 |
+| **审理工作流** | `src/review/workflow.py` | **新增**（P0） | **是** | Phase 2.1 子图 |
+| **5 位 Judges** | `src/judgment/judges.py` | **新增**（P0） | **是** | parallel node 并行执行 |
+| **Final Judge** | `src/judgment/final_judge.py` | **新增**（P0） | **是** | 加权整合 |
+| **推理链** | `src/judgment/reasoning_chain.py` | **新增**（P0） | 否 | 结论 → 依据映射 |
+| **不确定性标注** | `src/judgment/uncertainty.py` | **新增**（P1） | 否 | 不确定性识别 |
+| **创新保护** | `src/judgment/innovation_protect.py` | **新增**（P1） | 否 | 创新问题特殊处理 |
+| **裁决书生成** | `src/judgment/report_generator.py` + `report_template.html` | **新增**（P0） | 否（纯 Jinja2） | HTML/MD/JSON 三格式 |
+| **LLM Provider** | `src/llm/providers.py` | **新增**（P0） | 否 | Mock/OpenAI/DashScope 统一接口 |
+| **Prompt 模板库** | `src/llm/prompt_library.py` | **新增**（P0） | 否 | 集中管理所有 Agent Prompt |
+| **Token 计数器** | `src/llm/token_counter.py` | **新增**（P1） | 否 | 成本估算 |
+| **重试配置** | `src/llm/retry.py` | **新增**（P1） | 否 | tenacity 配置 |
+| **全局编排大图** | `src/orchestration/graph.py` | **新增**（P0） | **是**（核心） | 集成 Phase 0/1/2.1/2.2 |
+| **Graph State** | `src/orchestration/state.py` | **新增**（P0） | 是 | 全局状态定义 |
+| **日志配置** | `src/utils/logging_config.py` | **新增**（P1） | 否 | JSON 格式化日志 |
+| **JSON 读写辅助** | `src/utils/io.py` | 已有 | 否 | 保持不变 |
+| **领域知识库 YAML** | `data/domain_kb/*.yaml` | **新增**（P1） | 否 | 6 个预置领域 |
+
+### 6.2 代码量估算（粗估）
+
+| 区域 | 预估代码行 | 比例 |
+|:---|:---|:---|
+| `src/orchestration/`（LangGraph 编排） | 200-300 | ~10% |
+| `src/llm/`（Provider + Prompt） | 200-400 | ~12% |
+| `src/knowledge/` | 200-300 | ~10% |
+| `src/debate/` | 400-600 | ~20% |
+| `src/review/` | 200-300 | ~10% |
+| `src/judgment/` | 500-700 | ~22% |
+| `backend/models/schemas.py` 扩展 | 200-300 | ~8% |
+| `cli.py` 扩展 | 150-250 | ~5% |
+| `api.py` 扩展 | 150-250 | ~5% |
+| **合计（业务代码）** | **2000-3500 行** | |
+| `tests/` 单元测试 | 1500-2500 行 | |
+| `experiments/` 评估脚本 | 1000-2000 行 | |
+
+---
+
+## 7. LangGraph 替代方案评估
+
+> 为支撑"选择 LangGraph"这一关键决策，列出几种可替代方案的优劣势，便于团队讨论与决策回滚。
+
+| 方案 | 优点 | 缺点 | 适用场景 | 对 ParaJudge 的适配难度 |
+|:---|:---|:---|:---|:---|
+| **LangGraph（最终选择）** | 1. StateGraph 原生状态管理 2. parallel node 并行评估 3. Checkpointer 4. LangChain 生态 5. 可视化调试工具 | 1. 学习曲线 2. 版本仍 0.x | **本项目标准选择** | ✅ 1 周内上手 |
+| **AutoGen** | 1. 多 Agent 对话模式成熟 2. 社区活跃 | 1. 对结构化流程控制不够精细 2. 微软重写（v0.4 架构变动大） | 开放式 Agent 对话、工具调用型任务 | ⚠️ 中等：需重写裁决的并行节点 |
+| **CrewAI** | 1. Role/Goal/Tool 模式直观 2. 文档友好 | 1. 对辩论-裁决这种多阶段复杂流程不够灵活 2. 对状态持久化弱 | 顺序型任务流水线 | ⚠️ 中等：并行法官需自定义 |
+| **自研 asyncio 状态机** | 1. 完全可控 2. 零外部依赖 3. 轻量 | 1. 重新实现状态管理 2. 无可视化 3. 维护成本高 4. 无并行节点框架 | 极简项目 / 极端性能约束 | ⚠️ 高：工作量 ≥ 3 人月 |
+| **Prefect / Airflow** | 1. 成熟的任务编排 2. 可视化/监控 | 1. 设计为批处理/DAG，不擅长 Agent 对话式交互 2. 重量级 | 数据流水线 | ❌ 不合适 |
+| **Dramatiq / Celery** | 1. 任务队列 2. 异步执行 | 1. 仅解决执行调度，无状态图概念 | 异步任务分发 | ❌ 仅做底层执行器 |
+
+**结论**: LangGraph 在"控制精细度 + 并行能力 + Checkpointer + LangChain 生态"的组合上显著优于其他方案，是当前最佳选择。其他方案中，**AutoGen** 可作为特定 Agent（如开放探索型）的辅助框架，但不替代 LangGraph 的编排地位。
+
+---
+
+## 8. 运行环境要求
+
+### 8.1 开发环境
+
+| 资源 | 推荐配置 | 最低配置 |
+|:---|:---|:---|
+| Python 版本 | 3.11 / 3.12 | 3.10 |
+| 操作系统 | Ubuntu 22.04 LTS / macOS 13+ / Win11 WSL2 | 同上 |
+| CPU | 4 核 | 2 核 |
+| 内存 | 8 GB | 4 GB |
+| 磁盘 | 20 GB 可用 | 5 GB 可用 |
+| 网络 | 可访问 OpenAI / DashScope / arXiv API | 至少可访问 arXiv（Mock 模式无需外网） |
+| 外部账号 | OpenAI API Key + DashScope API Key（可选） | 无（Mock 模式） |
+
+### 8.2 生产环境
+
+| 资源 | 推荐配置 | 说明 |
+|:---|:---|:---|
+| Python 版本 | 3.12 | 稳定版 + 性能优势 |
+| 部署方式 | Docker + 容器编排（K8s / Docker Compose） | 基础镜像 `python:3.12-slim` |
+| CPU | 8 核 vCPU | 主要为 I/O 密集型，CPU 需求不高 |
+| 内存 | 16 GB | 主要用于 Python 运行时 + httpx 连接池 |
+| 磁盘 | 100 GB SSD | 运行日志 + 裁决书文件 |
+| GPU | 可选 | 仅在使用本地嵌入模型（sentence-transformers）时加速 |
+| 网络出口 | 需开放 HTTPS 443 到：api.openai.com / dashscope.aliyuncs.com / export.arxiv.org / api.semanticscholar.org / api.crossref.org | |
+| 对外暴露端口 | TCP 8000（uvicorn 默认） | 反代到 80/443 |
+| 监控 | Prometheus + Grafana 可选 | 采集 API 响应时间、LLM 调用次数、失败率 |
+| 日志聚合 | 可选：ELK / Loki | 结构化 JSON 日志友好 |
+| 备份策略 | 每日备份 `data/runs/` + `data/domain_kb/` | 裁决书与知识库是核心数据 |
+
+### 8.3 环境变量配置（`.env.example`）
+
+```dotenv
+# ===== LLM Provider =====
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4o-mini
+# OPENAI_BASE_URL=https://api.openai.com/v1    # 可改为自托管端点
+
+DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx     # 阿里云通义千问
+DASHSCOPE_MODEL=qwen-plus
+
+# ===== 运行配置 =====
+PARAJUDGE_ENV=development                      # development / staging / production
+DEFAULT_PROVIDER=mock                          # 默认 Provider: mock | openai | dashscope
+DEFAULT_MODEL=mock-model
+TOKEN_BUDGET_PER_RUN=100000                    # 单次运行 token 预算（提示阈值）
+
+# ===== 检索 API =====
+SEMANTIC_SCHOLAR_API_KEY=                      # 可选（提升配额）
+CROSSREF_POLITE_EMAIL=you@example.com          # 可选（提升配额）
+
+# ===== 外部服务（可选）=====
+CHROMA_PERSIST_DIR=./data/chroma
+FAISS_INDEX_PATH=./data/faiss.index
+
+# ===== 日志 =====
+LOG_LEVEL=INFO                                 # DEBUG/INFO/WARNING/ERROR
+LOG_FILE=./logs/parajudge.log                 # 可设 /dev/null 关闭文件日志
+```
+
+---
+
+## 9. 启动最小子集（MVP Stack）
+
+> 如果你只想"先跑起来看看"，以下是能让 ParaJudge 完成一次端到端 `parajudge run` 的最小依赖集合。
+
+### 9.1 必需依赖（约 15 个包）
+
+```txt
+# 核心框架
+langgraph==0.2.22
+langchain==0.3.10
+langchain-core==0.3.15
+
+# 用户接口
+fastapi==0.111.1
+uvicorn[standard]==0.30.6
+typer==0.12.5
+rich==13.7.1
+
+# 数据模型 / 配置
+pydantic==2.9.2
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+Jinja2==3.1.4
+PyYAML==6.0.2
+
+# 网络 / HTTP
+httpx==0.27.2
+tenacity==9.0.0
+
+# 学术检索（必须，EvidenceBuilder 的核心）
+arxiv==2.1.3
+
+# 工具
+tqdm==4.66.5
+```
+
+### 9.2 启动命令
+
+```bash
+# 1. 安装最小依赖
+pip install -r requirements.txt    # 或手动安装上面 15 个包
+
+# 2. 生成 .env（使用默认即可，无需 API Key）
+cp .env.example .env
+
+# 3. Mock Provider 端到端测试
+parajudge run "AI 开源是否会让研发公司失去竞争优势？" --provider mock --max-rounds 2
+
+# 4. API 模式
+uvicorn api:app --host 0.0.0.0 --port 8000
+curl -X POST http://localhost:8000/api/v1/parajudge/run \
+  -H "Content-Type: application/json" \
+  -d '{"problem": "是否应该让大模型在医疗诊断中直接给出建议？", "provider": "mock"}'
+```
+
+---
+
+## 10. 关键风险与替代
+
+| 风险项 | 概率 | 影响 | 缓解方案 / 替代 |
+|:---|:---|:---|:---|
+| **LangGraph 0.x API 变动** | 中 | 中 | 1) 严格锁定 `langgraph==0.2.22` 版本 2) 封装 `src/orchestration` 层，隔离 LangGraph API 变动 3) 关注官方 changelog |
+| **OpenAI API 价格 / 可用性** | 中 | 高 | 1) 支持 DashScope 作为主力中文模型 2) Mock Provider 保障开发 3) token 预算与费用告警 |
+| **arXiv 检索质量波动** | 低 | 中 | 多源检索（Semantic Scholar + Crossref）交叉验证；冷领域允许低 evidence_coverage |
+| **LLM 响应格式不稳定** | 中 | 中 | 1) 用 Pydantic 模型 + JSON mode 2) 格式重试 3) 失败降级为结构化文本解析 |
+| **Python 版本差异** | 低 | 低 | CI 测试 3.10 / 3.12 / 3.14；避免使用 3.12+ 专属语法 |
+| **大依赖（langchain-community）** | 中 | 低 | 按需安装；或只安装 langchain-core + 手写适配；可做 `--no-deps` 精简化安装 |
+| **PDF 解析依赖重（pymupdf）** | 低 | 低 | PDF 解析为 P2 需求；若遇安装问题可临时禁用，不影响核心辩论流程 |
+| **向量库资源占用（chromadb）** | 低 | 低 | P3 实验性；可推迟启用；或改用纯 BM25 + sqlite-utils 替代 |
+| **中文 Prompt 质量差异** | 中 | 中 | 1) 中英文双模板 2) 以 qwen 系列为中文基线测试 3) 中文裁决书渲染测试 |
+| **多 Agent 可复现性** | 中 | 高 | 1) Mock Provider 保证 seed 固定 2) 真实 LLM 设置 `temperature=0.0` 做确定性推理测试 3) 测试集人工评估容忍 ±5% 偏差 |
+
+---
+
+**本文件版本**: v1.0 · 2026-06-15  
+**适用范围**: ParaJudge 多智能体辩论系统 v0.1.0  
+**配套文档**: `docs/SRS_01_Introduction_And_TechStack.md` + `docs/SRS_02_Interface_And_Validation.md` + `docs/PARAJUDGE_DESIGN_REPORT.md`
