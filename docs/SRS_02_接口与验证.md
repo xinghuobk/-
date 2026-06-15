@@ -2,8 +2,12 @@
 
 ## 第 2 部分：接口需求 + 外部服务 + 设计约束 + 验收标准 + 参考实现位置
 
-> **文档版本**：v1.0
+> **文档版本**：v1.1
 > **更新日期**：2026-06-15
+>
+> **版本历史**：
+> - v1.1（2026-06-15）：新增 Moderator（主持人）角色完整接口规格、配置项与验收测试矩阵（CLI `--moderator-strictness`、`--*-rounds`、REST `config.moderator_*`、内部接口 `Moderator` 方法、F-310.x~F-314.x 用例、F-101 端到端）。
+> - v1.0（2026-06-15）：初始版本，覆盖接口需求、外部服务、设计约束、验收标准与参考实现位置。
 
 ---
 
@@ -68,6 +72,9 @@ OPTIONS:
   --enable-review / --no-review  是否启用审理阶段     [默认: enable]
   --moderator-strictness 主持人严格度 loose|normal|strict [默认: normal]
   --max-total-seconds INT  Phase 1 总时长上限（秒）  [默认: 1800]
+  --opening-rounds INT   立论（OPENING）阶段最大发言轮数    [默认: 2]
+  --cross-exam-rounds INT 交叉质询（CROSS_EXAM）阶段最大发言轮数 [默认: 4]
+  --closing-rounds INT   结辩（CLOSING）阶段最大发言轮数    [默认: 2]
   --save PATH            输出目录，保存裁决书/状态    [默认: data/runs/{auto_id}/]
   --format FMT           裁决书格式: html|md|json|all [默认: all]
   --token-budget INT     单次运行 token 预算，超限告警
@@ -139,6 +146,9 @@ Content-Type: application/json
     "evidence_brief_size": 25,
     "moderator_strictness": "normal",  # loose|normal|strict
     "max_total_seconds": 1800,         # Phase 1 总时长上限
+    "opening_max_rounds": 2,           # 立论阶段最大发言轮数（由 Moderator 驱动）
+    "cross_exam_max_rounds": 4,        # 交叉质询阶段最大发言轮数
+    "closing_max_rounds": 2,           # 结辩阶段最大发言轮数
     "domain_kb_path": null
   },
   "options": {                // （可选）运行参数
@@ -246,6 +256,9 @@ src.knowledge.domain_kb.load(path: str) -> DomainKB
 src.debate.coach.plan(problem: str, brief: EvidenceBrief, side: str) -> CoachPlan
 src.debate.speaker.speak(problem: str, brief: EvidenceBrief, plan: CoachPlan, speaker_id: str) -> Argument
 src.debate.moderator.run_phase(brief: EvidenceBrief, speakers: List[Speaker], coaches: List[Coach], config: ModeratorConfig) -> DebateSummary  # ★ Moderator 主入口
+src.debate.moderator.Moderator(config, brief, speakers, coaches) -> DebateSummary                # ★ Moderator 主方法签名（类级别：状态机 + 质量守门 + 汇总产出）
+src.debate.moderator.Moderator._should_advance_phase(current_phase: str, turns_in_phase: int) -> bool  # 判断是否推进到下一阶段
+src.debate.moderator.Moderator._check_duplicate(argument: Argument) -> float               # 返回与已有论点的相似度（≥阈值即 duplicate）
 src.debate.poi_engine.query(argument: Argument, brief: EvidenceBrief, opponent_id: str) -> POIInteraction
 src.debate.workflow.run(problem: str, brief: EvidenceBrief, config: DebateConfig) -> DebateState
 
@@ -389,6 +402,15 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | F-16.2 | 强制超时终止 | 配置 `max_total_seconds = 10`，10 秒内 Phase 1 必须终止并产出 DebateSummary（即使未完成所有阶段） |
 | F-17 | 辩论自适应终止 | 对于简单问题，实际轮数 ≤ 配置 `max_rounds` |
 | F-17.1 | ModeratorConfig 可配置性 | 使用 FAST vs DEEP 两种不同配置运行同一问题，轮数和耗时差异 ≥ 2× |
+| F-310.1 | Moderator 状态机正确性（多配置） | 在 3 个标准配置（FAST / STANDARD / DEEP）上运行同一问题，Moderator 状态均按 `OPENING → CROSS_EXAM → CLOSING → DONE` 顺序正确迁移，无跳阶段 / 死循环 |
+| F-310.2 | 阶段超时检测（强制终止） | 设置 `max_total_seconds=3`，在第 3.5 秒之前 Moderator 必须强制终止 Phase 1，状态进入 DONE，并产出 `DebateSummary`（含 `phase_durations`） |
+| F-311.1 | 论点去重检测（相似度） | 构造 2 条几乎相同的论点（embedding 相似度 > 0.85），第 2 条被 Moderator 标记为 `duplicate`，且不进入最终 `ArgumentIndex` |
+| F-311.2 | 主题漂移检测（分模式） | 注入偏离问题主题的发言，被 Moderator 标记为 `off_topic`；在 `strict` 模式下该类发言被拒绝，不进入后续阶段 |
+| F-312.1 | 时间片截断（token） | 当发言 token 数超过 `max_tokens_per_turn=400` 时，发言被截断并在 `DebateSummary.warnings` 中留下 `token_trim` 记录 |
+| F-312.2 | 发言超时（时长） | 设置 `max_seconds_per_turn=2`，超过 2 秒的发言被 Moderator 标记为 `timeout`，进入 warnings 列表，不影响整体流程 |
+| F-313.1 | POI 批准机制（阶段感知） | 正方在交叉质询（CROSS_EXAM）阶段发起 POI → 被批准；在立论（OPENING）阶段发起 POI → 被拒绝；拒绝/批准记录写入 DebateSummary |
+| F-314.1 | DebateSummary 强制产出 | Phase 1 结束后必须产出结构化 `DebateSummary`，包含 `key_arguments`、`warnings`、`phase_durations` 三个字段且均非空 |
+| F-314.2 | warnings 审计（字段合规） | 每次违规触发的警告均写入 `warnings` 列表，每条包含 `speaker_id`、`warning_type`、`message`、`timestamp` 四个字段 |
 
 #### 10.1.3 Phase 2.1 审理引擎验收
 
@@ -427,6 +449,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | F-51 | CLI 子命令完整性 | `parajudge run/evidence/debate/review/judge/config/list/view/benchmark --help` 均无异常 |
 | F-52 | CLI 端到端 | `parajudge run "测试问题" --provider mock --max-rounds 2 --moderator-strictness normal` ≤ 30 秒完成，产出裁决书；`data/runs/{id}/state.json` 含 DebateSummary 与 Moderator warnings |
 | F-52.1 | Moderator 配置开关 | `--moderator-strictness loose|normal|strict` 三档在同一问题上产生不同数量的 warnings，strict 最严格 |
+| F-101  | 端到端（E2E）测试 | `parajudge run "测试问题" --provider mock --moderator-strictness normal --max-rounds 2 --opening-rounds 1 --cross-exam-rounds 2 --closing-rounds 1` ≤ 30 秒完成，产出裁决书；`data/runs/{id}/state.json` 含 `DebateSummary` 与 Moderator `warnings` |
 | F-53 | API 健康检查 | `curl /health` → HTTP 200，含 version 与 service 状态 |
 | F-53.1 | Moderator 状态接口 | `GET /api/v1/parajudge/task/{id}` 返回的 state 中包含 `current_phase` 和 `phase_durations` |
 | F-54 | API 异步任务 | `POST /run` → 返回 task_id；轮询 `GET /task/{id}` → 状态推进正确 → 完成后 `GET /report.html` 正常返回 |
@@ -544,7 +567,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 │   │   ├── agent_base.py               # ParaJudgeAgent 基类（RunnableSerializable）
 │   │   ├── coach.py                    # Coach（正方/反方规划）
 │   │   ├── speaker.py                  # Speaker Agent
-│   │   ├── moderator.py                # ★ 主持人 Moderator（状态机 + 时间片 + 质量守门）
+│   │   ├── moderator.py                # ★ 主持人 Moderator（状态机 + 时间片 + 质量守门；v1.1 明确：P0 / 约 0.8 人月，依赖 agent_base + speaker + argument_index）
 │   │   ├── poi_engine.py               # Point-of-Information 段间质询
 │   │   ├── evidence_closure.py         # 证据闭包与引用验证
 │   │   ├── argument_index.py           # 论点索引维护 + 漂移检测
@@ -682,7 +705,7 @@ Agent 调用 LLM 的统一流程（在 src.llm.providers 中实现）:
 | `src/debate/agent_base.py` | - | P0 | 0.5 | providers |
 | `src/debate/coach.py` | - | P0 | 1.0 | agent_base + evidence |
 | `src/debate/speaker.py` | - | P0 | 1.0 | coach |
-| `src/debate/moderator.py` | - | P0 | 0.8 | coach+speaker+argument_index |
+| `src/debate/moderator.py` | - | P0 | 0.8 | agent_base + speaker + argument_index（v1.1 更新） |
 | `src/debate/evidence_closure.py` | - | P0 | 0.5 | speaker |
 | `src/debate/argument_index.py` | - | P0 | 0.5 | speaker |
 | `src/debate/workflow.py` (Phase 1 Graph) | - | P0 | 1.0 | coach+speaker |

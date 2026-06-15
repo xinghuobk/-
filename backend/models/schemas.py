@@ -124,54 +124,52 @@ class DebateConfig(BaseModel):
 
 class ModeratorStrictness(str, Enum):
     """主持人严格程度"""
-    LOOSE = "loose"           # 宽松，仅记录警告不拒绝
-    NORMAL = "normal"         # 默认，轻度质量守门
-    STRICT = "strict"         # 严格，主题漂移/重复论点一律拒绝写入
+    LOOSE = "loose"
+    NORMAL = "normal"
+    STRICT = "strict"
 
 
 class TimeboxConfig(BaseModel):
-    """时间片配置（驱动 Moderator 的节奏管理）"""
-    model_config = ConfigDict(use_enum_values=True)
-
-    max_tokens_per_turn: int = Field(default=400, ge=50, le=2000, description="单条发言最大 token 数")
-    max_seconds_per_turn: int = Field(default=120, ge=10, le=1800, description="单条发言最大秒数")
-    max_total_seconds: int = Field(default=600, ge=60, le=7200, description="Phase 1 总时长上限（秒）")
-    poi_max_per_phase: int = Field(default=3, ge=0, le=10, description="每阶段最多 POI 次数")
+    """时间片配置"""
+    max_tokens_per_turn: int = Field(default=400, ge=50)
+    max_seconds_per_turn: int = Field(default=120, ge=10)
+    max_total_seconds: int = Field(default=600, ge=60)
+    poi_max_per_phase: int = Field(default=3, ge=0)
 
 
 class ModeratorConfig(BaseModel):
     """主持人配置——驱动辩论状态机的行为"""
     model_config = ConfigDict(use_enum_values=True)
 
-    opening_max_rounds: int = Field(default=1, ge=1, le=3, description="立论阶段每方最多轮数")
-    cross_exam_max_rounds: int = Field(default=2, ge=1, le=5, description="交叉质询阶段每方最多轮数")
-    free_debate_max_turns: int = Field(default=4, ge=1, le=10, description="自由辩论总轮数")
-    closing_max_rounds: int = Field(default=1, ge=1, le=3, description="总结陈词每方最多轮数")
-    enable_poi: bool = Field(default=False, description="是否启用 POI（段间质询）")
-    timebox_config: TimeboxConfig = Field(default_factory=TimeboxConfig, description="时间片配置")
-    strictness: ModeratorStrictness = Field(default=ModeratorStrictness.NORMAL, description="质量守门严格程度")
-    duplicate_threshold: float = Field(default=0.85, ge=0.5, le=1.0, description="论点去重相似度阈值")
-    off_topic_threshold: float = Field(default=0.4, ge=0.1, le=0.9, description="主题漂移阈值（低于则警告）")
+    opening_max_rounds: int = Field(default=1, ge=1)
+    cross_exam_max_rounds: int = Field(default=2, ge=1)
+    free_debate_max_turns: int = Field(default=4, ge=1)
+    closing_max_rounds: int = Field(default=1, ge=1)
+    enable_poi: bool = False
+    timebox_config: TimeboxConfig
+    strictness: ModeratorStrictness = ModeratorStrictness.NORMAL
+    duplicate_threshold: float = Field(default=0.85, ge=0.5, le=1.0)
+    off_topic_threshold: float = Field(default=0.4, ge=0.1, le=0.9)
 
 
 class TurnRequest(BaseModel):
     """Moderator 向单个 Speaker 发出的发言请求"""
     model_config = ConfigDict(use_enum_values=True)
 
-    turn_id: str = Field(..., description="发言请求唯一ID，如 turn-001")
-    speaker_id: str = Field(..., description="目标 speaker ID")
-    phase: DebatePhase = Field(..., description="当前辩论阶段")
-    round_index: int = Field(0, ge=0, description="阶段内轮次索引")
-    timebox_max_tokens: int = Field(default=400, ge=50, le=2000, description="本次发言 token 上限")
-    timebox_max_seconds: int = Field(default=120, ge=10, le=1800, description="本次发言秒数上限")
+    turn_id: str
+    speaker_id: str
+    phase: DebatePhase
+    round_index: int = Field(default=0, ge=0)
+    timebox_max_tokens: int = 400
+    timebox_max_seconds: int = 120
 
 
 class ModeratorWarningType(str, Enum):
     """警告类型"""
-    DUPLICATE = "duplicate"   # 论点重复
-    OFF_TOPIC = "off_topic"   # 主题漂移
-    TIMEOUT = "timeout"       # 超时
-    INVALID_CITE = "invalid_cite"  # 引用不合法
+    DUPLICATE = "duplicate"
+    OFF_TOPIC = "off_topic"
+    TIMEOUT = "timeout"
+    INVALID_CITE = "invalid_cite"
 
 
 class ModeratorWarning(BaseModel):
@@ -181,28 +179,32 @@ class ModeratorWarning(BaseModel):
     speaker_id: str
     warning_type: ModeratorWarningType
     message: str
-    argument_excerpt: Optional[str] = Field(default=None, description="被拒绝发言的简短摘要（便于审计）")
+    argument_excerpt: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class DebateSummary(BaseModel):
-    """Phase 1 产出的结构化辩论总结，供 Phase 2.1 审理消费"""
+    """结构化辩论总结"""
     model_config = ConfigDict(use_enum_values=True)
 
-    debate_id: str
-    phase_durations: Dict[str, float] = Field(default_factory=dict, description="各阶段耗时（秒）")
-    total_duration: float = Field(default=0.0, ge=0.0, description="Phase 1 总耗时（秒）")
-    total_turns: int = Field(default=0, ge=0, description="有效发言总轮数")
-    key_arguments: List[Argument] = Field(default_factory=list, description="核心论点精选（已通过质量守门）")
-    warnings: List[ModeratorWarning] = Field(default_factory=list, description="警告记录")
-    argument_index_ref: Optional[str] = Field(default=None, description="ArgumentIndex 的存储引用（文件路径/DB Key）")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="扩展字段")
+    run_id: Optional[str] = None
+    problem: str
+    problem_type: Optional[str] = None
+    phase_durations: Dict[str, float] = Field(default_factory=dict)
+    total_duration: float = Field(default=0.0, ge=0.0)
+    total_turns: int = Field(default=0, ge=0)
+    total_speakers: int = Field(default=0, ge=0)
+    key_arguments: List[dict] = Field(default_factory=list)
+    warnings: List[ModeratorWarning] = Field(default_factory=list)
+    config_snapshot: Optional[dict] = None
+    argument_index_ref: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def summary_stats(self) -> Dict[str, int]:
-        """返回警告数量的分类统计（供裁决时加权）"""
+        """统计各 warning_type 的数量"""
         stats: Dict[str, int] = {}
         for w in self.warnings:
-            key = w.warning_type.value
+            key = w.warning_type.value if isinstance(w.warning_type, ModeratorWarningType) else w.warning_type
             stats[key] = stats.get(key, 0) + 1
         return stats
 
