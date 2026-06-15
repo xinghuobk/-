@@ -128,7 +128,7 @@
 
 ### 4.3 数据模型需求
 
-参见 [PROJECT_PLAN.md#数据结构定义](file:///workspace/PROJECT_PLAN.md)中的第 7 节。关键 Pydantic 模型：
+参见 [项目开发规划.md#数据结构定义](file:///workspace/项目开发规划.md)中的第 7 节。关键 Pydantic 模型：
 
 - `EvidenceItem` / `EvidenceBrief`：证据条目与证据包
 - `PrincipleItem` / `CaseItem` / `DomainKB`：原则库与案例库
@@ -393,7 +393,7 @@
 │   ├─── AGENT_DESIGN.md            # Agent 设计规范
 │   ├─── API_DESIGN.md              # API 设计文档
 │   ├─── EVALUATION_DESIGN.md       # 评估方案
-│   └─── USAGE.md                   # 使用指南
+│   └─── 使用指南.md                  # 使用指南
 │
 ├─── requirements.txt               # (已有) 核心依赖
 ├─── requirements-experimental.txt  # (已有) 实验依赖

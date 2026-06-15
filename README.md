@@ -30,7 +30,7 @@
 
 核心创新：**目标驱动异质性**、**证据闭包**、**类判决书推理链**、**创新保护机制**。
 
-*详细设计与研究方案参见 [OPENING_REPORT.md](file:///workspace/OPENING_REPORT.md) 与 [PROJECT_PROPOSAL.md](file:///workspace/PROJECT_PROPOSAL.md)*
+*详细设计与研究方案参见 [开题报告.md](file:///workspace/开题报告.md) 与 [项目计划书.md](file:///workspace/项目计划书.md)*
 
 ---
 
@@ -38,10 +38,10 @@
 
 ```
 /workspace/
-├── OPENING_REPORT.md                 # 开题报告（研究方案）
-├── PROJECT_PROPOSAL.md              # 项目计划书（详细规划）
-├── PROJECT_PLAN.md                  # 开发规划（模块与进度）
-├── research_report.md               # MAD 领域调研
+├── 开题报告.md                       # 研究方案
+├── 项目计划书.md                     # 详细规划
+├── 项目开发规划.md                   # 模块与进度
+├── MAD领域调研报告.md                # MAD 领域调研
 ├── requirements.txt                 # 核心依赖
 ├── requirements-experimental.txt    # 扩展依赖（Jupyter 等）
 │
@@ -84,7 +84,7 @@
 │   └── ...
 │
 ├── data/                           # 数据文件（如 PDF、BibTeX 输出）
-├── docs/                           # 文档（如 USAGE.md）
+├── docs/                           # 文档（如 使用指南.md）
 │
 ├── index.html                      # 示例前端页面
 └── .gitignore                      # Git 忽略规则
@@ -330,7 +330,7 @@ uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 
 ### 规划中 📋
 
-详见 [PROJECT_PROPOSAL.md](file:///workspace/PROJECT_PROPOSAL.md) 与 [OPENING_REPORT.md](file:///workspace/OPENING_REPORT.md)：
+详见 [项目计划书.md](file:///workspace/项目计划书.md) 与 [开题报告.md](file:///workspace/开题报告.md)：
 
 - 模块 A：证据与知识库管理（Evidence Brief、Domain KB）
 - 模块 B：辩论引擎（教练-辩手双角色，POI 段间质询，证据闭包）
@@ -345,12 +345,12 @@ uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 
 | 文档 | 内容 |
 |------|------|
-| **OPENING_REPORT.md** | 研究开题报告：背景、目标、创新点、评估方案 |
-| **PROJECT_PROPOSAL.md** | 项目计划书：技术架构、模块分工、资源预算 |
-| **PROJECT_PLAN.md** | 开发规划：进度安排、API/CLI 设计、测试策略 |
-| **research_report.md** | 多智能体辩论（MAD）领域调研：里程碑、技术栈 |
+| **开题报告.md** | 研究开题报告：背景、目标、创新点、评估方案 |
+| **项目计划书.md** | 项目计划书：技术架构、模块分工、资源预算 |
+| **项目开发规划.md** | 开发规划：进度安排、API/CLI 设计、测试策略 |
+| **MAD领域调研报告.md** | 多智能体辩论（MAD）领域调研：里程碑、技术栈 |
 | **README.md** | 本文件：项目总览、快速开始、使用示例 |
-| **docs/USAGE.md** | 详细使用文档（如存在） |
+| **docs/使用指南.md** | 详细使用文档 |
 
 ---
 

@@ -215,8 +215,8 @@ def is_key_paper(paper_dict: dict) -> bool:
 
 # ============ 主流程 ============
 def main() -> None:
-    output_json = WORKSPACE_ROOT / "docs" / "mad_papers_research.json"
-    output_md = WORKSPACE_ROOT / "docs" / "mad_papers_list.md"
+    output_json = WORKSPACE_ROOT / "docs" / "MAD论文研究数据.json"
+    output_md = WORKSPACE_ROOT / "docs" / "MAD论文列表.md"
 
     start_time = datetime.now(timezone.utc)
     print(f"[{start_time.isoformat()}] 开始 MAD 论文搜索 (v2)")
@@ -380,7 +380,7 @@ def main() -> None:
     lines.append(f"> 关键词数：{len(KEYWORDS)} | 年份范围：{YEAR_MIN}-{YEAR_MAX}")
     lines.append(f"> 总论文数：**{len(sorted_papers)}** | 关键论文：**{len(key_papers)}**")
     lines.append("")
-    lines.append(f"> JSON 原始数据：`docs/mad_papers_research.json`")
+    lines.append(f"> JSON 原始数据：`docs/MAD论文研究数据.json`")
     lines.append("")
 
     if key_papers:
