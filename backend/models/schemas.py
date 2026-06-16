@@ -632,12 +632,33 @@ class JudgmentResult(BaseModel):
 # 全流程最终输出
 # ============================================================
 
+class LLMSessionSummary(BaseModel):
+    """LLM 调用摘要（附在 FullPipelineOutput 中）"""
+    total_calls: int = 0
+    total_prompt_tokens: int = 0
+    total_completion_tokens: int = 0
+    total_tokens: int = 0
+    total_cost_cny: float = 0.0
+    calls_by_role: Dict[str, int] = Field(default_factory=dict)
+
+
 class FullPipelineOutput(BaseModel):
-    """一次完整 ParaJudge 运行的所有产出物"""
+    """一次完整 ParaJudge 运行的所有产出物（v0.3.0+）"""
+    # 身份标识
+    version: str = "0.3.0"
     run_id: str
+    timestamp: float = Field(default_factory=time.time)
+
+    # 输入
     problem: str
+    config: Dict[str, Any] = Field(default_factory=dict)  # provider / model / rounds / ...
+
+    # 各阶段产物
     evidence_brief: EvidenceBrief
     transcript: DebateTranscript
     review: ReviewReport
     judgment: JudgmentResult
+
+    # 统计
     total_time_sec: float
+    llm_stats: LLMSessionSummary = Field(default_factory=LLMSessionSummary)
