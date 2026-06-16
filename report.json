@@ -1,0 +1,427 @@
+{
+  "run_id": "6fa72cce",
+  "problem": "LLM 是否会取代人类大部分工作？",
+  "evidence_brief": {
+    "problem": "LLM 是否会取代人类大部分工作？",
+    "query_terms": [
+      "是否会取代人类大部分工作",
+      "llm"
+    ],
+    "items": [
+      {
+        "evidence_id": "E-001",
+        "title": "A Survey of 是否会取代人类大部分工作 llm Methods and Applications",
+        "authors": [
+          "Alice Zhang",
+          "Bob Li",
+          "Carol Wang"
+        ],
+        "year": 2024,
+        "venue": "arXiv",
+        "abstract_excerpt": "This paper presents a comprehensive survey of 是否会取代人类大部分工作 llm-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+        "key_quotes": [],
+        "relevance_score": 0.716,
+        "source_type": "academic_paper",
+        "citation_count": 120,
+        "url": "https://arxiv.org/abs/2401.00001"
+      },
+      {
+        "evidence_id": "E-002",
+        "title": "Towards Efficient 是否会取代人类大部分工作 llm via Novel Architectures",
+        "authors": [
+          "David Chen",
+          "Emma Liu"
+        ],
+        "year": 2023,
+        "venue": "arXiv",
+        "abstract_excerpt": "We propose a novel architecture for 是否会取代人类大部分工作 llm that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+        "key_quotes": [],
+        "relevance_score": 0.453,
+        "source_type": "academic_paper",
+        "citation_count": 58,
+        "url": "https://arxiv.org/abs/2310.12345"
+      },
+      {
+        "evidence_id": "E-003",
+        "title": "An Empirical Study of 是否会取代人类大部分工作 llm in Real-world Scenarios",
+        "authors": [
+          "Frank Huang",
+          "Grace Zhao",
+          "Helen Sun"
+        ],
+        "year": 2025,
+        "venue": "arXiv",
+        "abstract_excerpt": "An empirical evaluation of 是否会取代人类大部分工作 llm models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+        "key_quotes": [],
+        "relevance_score": 0.296,
+        "source_type": "academic_paper",
+        "citation_count": 12,
+        "url": "https://arxiv.org/abs/2502.06789"
+      }
+    ],
+    "total_count": 3,
+    "build_time_sec": 1.237
+  },
+  "transcript": {
+    "problem": "LLM 是否会取代人类大部分工作？",
+    "pro_stance": "正方：主张问题的答案为「是」",
+    "con_stance": "反方：主张问题的答案为「否」",
+    "rounds_total": 2,
+    "arguments": [
+      {
+        "arg_id": "A-001",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "side": "pro",
+        "speaker": "Pro Agent",
+        "round_index": 1,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-002",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "side": "pro",
+        "speaker": "Pro Agent",
+        "round_index": 1,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-003",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "side": "con",
+        "speaker": "Con Agent",
+        "round_index": 1,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-004",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "side": "con",
+        "speaker": "Con Agent",
+        "round_index": 1,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-005",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "side": "pro",
+        "speaker": "Pro Agent",
+        "round_index": 2,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-006",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "side": "pro",
+        "speaker": "Pro Agent",
+        "round_index": 2,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-007",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "side": "con",
+        "speaker": "Con Agent",
+        "round_index": 2,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      },
+      {
+        "arg_id": "A-008",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "side": "con",
+        "speaker": "Con Agent",
+        "round_index": 2,
+        "evidence_refs": [],
+        "reasoning": "选择最直接支持反方立场的证据。",
+        "timestamp": 7484.276
+      }
+    ],
+    "argument_index": {
+      "arguments": [
+        {
+          "arg_id": "A-001",
+          "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+          "side": "pro",
+          "speaker": "Pro Agent",
+          "round_index": 1,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-002",
+          "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+          "side": "pro",
+          "speaker": "Pro Agent",
+          "round_index": 1,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-003",
+          "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+          "side": "con",
+          "speaker": "Con Agent",
+          "round_index": 1,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-004",
+          "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+          "side": "con",
+          "speaker": "Con Agent",
+          "round_index": 1,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-005",
+          "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+          "side": "pro",
+          "speaker": "Pro Agent",
+          "round_index": 2,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-006",
+          "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+          "side": "pro",
+          "speaker": "Pro Agent",
+          "round_index": 2,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-007",
+          "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+          "side": "con",
+          "speaker": "Con Agent",
+          "round_index": 2,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        },
+        {
+          "arg_id": "A-008",
+          "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+          "side": "con",
+          "speaker": "Con Agent",
+          "round_index": 2,
+          "evidence_refs": [],
+          "reasoning": "选择最直接支持反方立场的证据。",
+          "timestamp": 7484.276
+        }
+      ],
+      "pro_count": 4,
+      "con_count": 4
+    },
+    "generation_time": 0.0
+  },
+  "review": {
+    "issues": [
+      {
+        "issue_id": "R-001",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-001",
+        "excerpt": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-002",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-002",
+        "excerpt": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-003",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-003",
+        "excerpt": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-004",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-004",
+        "excerpt": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-005",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-005",
+        "excerpt": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-006",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-006",
+        "excerpt": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-007",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-007",
+        "excerpt": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-008",
+        "severity": "warning",
+        "issue_type": "no_evidence",
+        "target_arg_id": "A-008",
+        "excerpt": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "description": "该论点未引用任何证据，属于纯粹的主张（assertion without evidence）。"
+      },
+      {
+        "issue_id": "R-100",
+        "severity": "warning",
+        "issue_type": "weak_support",
+        "target_arg_id": "A-002",
+        "excerpt": "",
+        "description": "论点声称 LLM 导致工时下降，但证据 E-003 仅统计了 3 家科技公司样本，代表性有限"
+      }
+    ],
+    "critical_count": 0,
+    "warning_count": 9,
+    "pro_issues": 5,
+    "con_issues": 4,
+    "summary": "审理发现 9 个警告。",
+    "generation_time": 0.0
+  },
+  "judgment": {
+    "winner": "pro",
+    "pro_final_score": 72.8,
+    "con_final_score": 65.0,
+    "judge_scores": [
+      {
+        "judge_type": "evidence",
+        "judge_name": "证据法法官",
+        "pro_score": 75.0,
+        "con_score": 62.0,
+        "pro_feedback": "证据引用充分，论点结构清晰，实证数据支持有力。",
+        "con_feedback": "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。",
+        "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。"
+      },
+      {
+        "judge_type": "logic",
+        "judge_name": "逻辑分析法官",
+        "pro_score": 71.0,
+        "con_score": 68.0,
+        "pro_feedback": "证据引用充分，论点结构清晰，实证数据支持有力。",
+        "con_feedback": "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。",
+        "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。"
+      },
+      {
+        "judge_type": "principle",
+        "judge_name": "原则性法官",
+        "pro_score": 71.0,
+        "con_score": 64.0,
+        "pro_feedback": "证据引用充分，论点结构清晰，实证数据支持有力。",
+        "con_feedback": "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。",
+        "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。"
+      },
+      {
+        "judge_type": "case",
+        "judge_name": "案例法法官",
+        "pro_score": 73.0,
+        "con_score": 66.0,
+        "pro_feedback": "证据引用充分，论点结构清晰，实证数据支持有力。",
+        "con_feedback": "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。",
+        "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。"
+      },
+      {
+        "judge_type": "innovation",
+        "judge_name": "创新性法官",
+        "pro_score": 74.0,
+        "con_score": 65.0,
+        "pro_feedback": "证据引用充分，论点结构清晰，实证数据支持有力。",
+        "con_feedback": "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。",
+        "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。"
+      }
+    ],
+    "reasoning_chain_pro": [
+      {
+        "node_id": "N-001",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "source_type": "claim",
+        "ref_ids": []
+      },
+      {
+        "node_id": "N-002",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "source_type": "claim",
+        "ref_ids": []
+      },
+      {
+        "node_id": "N-003",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "source_type": "claim",
+        "ref_ids": []
+      }
+    ],
+    "reasoning_chain_con": [
+      {
+        "node_id": "N-001",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "source_type": "claim",
+        "ref_ids": []
+      },
+      {
+        "node_id": "N-002",
+        "content": "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+        "source_type": "claim",
+        "ref_ids": []
+      },
+      {
+        "node_id": "N-003",
+        "content": "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+        "source_type": "claim",
+        "ref_ids": []
+      }
+    ],
+    "key_points_pro": [
+      "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+      "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+      "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）"
+    ],
+    "key_points_con": [
+      "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）",
+      "创造力、共情能力和复杂判断等人类核心能力当前的 LLM 尚无法替代，且人类对这些能力的需求在增加（E-007）",
+      "历史上的技术革命（如计算机、互联网）最终都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少（E-005）"
+    ],
+    "uncertainties": [],
+    "generation_time": 0.0
+  },
+  "total_time_sec": 1.24
+}

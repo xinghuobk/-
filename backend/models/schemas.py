@@ -496,3 +496,148 @@ class WritingResponse(BaseModel):
     model_name: Optional[str] = Field(default=None, description="使用的模型名")
     used_time: float = Field(default=0.0, ge=0.0, description="耗时（秒）")
     citations: List[str] = Field(default_factory=list, description="相关引用")
+
+
+# ============================================================
+# Phase 0 · 证据构建
+# ============================================================
+
+class EvidenceItem(BaseModel):
+    """单条证据：一篇论文的摘要 + 相关片段"""
+    evidence_id: str
+    title: str
+    authors: List[str] = Field(default_factory=list)
+    year: Optional[int] = None
+    venue: Optional[str] = None
+    abstract_excerpt: str
+    key_quotes: List[str] = Field(default_factory=list)
+    relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    source_type: str = "academic_paper"
+    citation_count: Optional[int] = None
+    url: Optional[str] = None
+
+
+class EvidenceBrief(BaseModel):
+    """Phase 0 输出：证据摘要包"""
+    problem: str
+    query_terms: List[str] = Field(default_factory=list)
+    items: List[EvidenceItem] = Field(default_factory=list)
+    total_count: int = 0
+    build_time_sec: float = 0.0
+
+
+# ============================================================
+# Phase 1 · 辩论
+# ============================================================
+
+class DebateArgument(BaseModel):
+    """单个论点"""
+    arg_id: str
+    content: str
+    side: str                               # "pro" | "con"
+    speaker: str                            # "Pro Agent" / "Con Agent"
+    round_index: int                        # 第几次发言
+    evidence_refs: List[str] = Field(default_factory=list)
+    reasoning: str = ""
+    timestamp: float = 0.0
+
+
+class ArgumentIndex(BaseModel):
+    """所有论点的索引（供后续阶段查询）"""
+    arguments: List[DebateArgument] = Field(default_factory=list)
+    pro_count: int = 0
+    con_count: int = 0
+
+    def by_side(self, side: str) -> List[DebateArgument]:
+        return [a for a in self.arguments if a.side == side]
+
+    def by_evidence(self, evidence_id: str) -> List[DebateArgument]:
+        return [a for a in self.arguments if evidence_id in a.evidence_refs]
+
+
+class DebateTranscript(BaseModel):
+    """Phase 1 完整输出"""
+    problem: str
+    pro_stance: str
+    con_stance: str
+    rounds_total: int
+    arguments: List[DebateArgument] = Field(default_factory=list)
+    argument_index: ArgumentIndex = Field(default_factory=ArgumentIndex)
+    generation_time: float = 0.0
+
+
+# ============================================================
+# Phase 2.1 · 审理
+# ============================================================
+
+class IssueItem(BaseModel):
+    """单个问题项"""
+    issue_id: str
+    severity: str                             # "critical" | "warning" | "info"
+    issue_type: str                           # "invalid_cite" / "no_evidence" / "weak_support" / "circular" / "contradiction"
+    target_arg_id: str
+    excerpt: str
+    description: str
+
+
+class ReviewReport(BaseModel):
+    """Phase 2.1 审理报告"""
+    issues: List[IssueItem] = Field(default_factory=list)
+    critical_count: int = 0
+    warning_count: int = 0
+    pro_issues: int = 0
+    con_issues: int = 0
+    summary: str = ""
+    generation_time: float = 0.0
+
+
+# ============================================================
+# Phase 2.2 · 裁决
+# ============================================================
+
+class JudgeScore(BaseModel):
+    """单个法官的评分"""
+    judge_type: str                           # "evidence" / "logic" / "principle" / "case" / "innovation"
+    judge_name: str
+    pro_score: float
+    con_score: float
+    pro_feedback: str
+    con_feedback: str
+    reasoning: str
+
+
+class ReasoningNode(BaseModel):
+    """推理链节点"""
+    node_id: str
+    content: str
+    source_type: str                         # "claim" / "evidence" / "intermediate"
+    ref_ids: List[str] = Field(default_factory=list)
+
+
+class JudgmentResult(BaseModel):
+    """最终裁决结果"""
+    winner: str
+    pro_final_score: float
+    con_final_score: float
+    judge_scores: List[JudgeScore] = Field(default_factory=list)
+    reasoning_chain_pro: List[ReasoningNode] = Field(default_factory=list)
+    reasoning_chain_con: List[ReasoningNode] = Field(default_factory=list)
+    key_points_pro: List[str] = Field(default_factory=list)
+    key_points_con: List[str] = Field(default_factory=list)
+    uncertainties: List[str] = Field(default_factory=list)
+    generation_time: float = 0.0
+
+
+# ============================================================
+# 全流程最终输出
+# ============================================================
+
+class FullPipelineOutput(BaseModel):
+    """一次完整 ParaJudge 运行的所有产出物"""
+    run_id: str
+    problem: str
+    evidence_brief: EvidenceBrief
+    transcript: DebateTranscript
+    review: ReviewReport
+    judgment: JudgmentResult
+    total_time_sec: float

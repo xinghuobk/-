@@ -1,10 +1,11 @@
-"""学术论文工具链：检索 / 解析 / 引用 / 写作。
+"""学术论文工具链：检索 / 解析 / 引用 / 写作 + ParaJudge 多智能体辩论。
 
-基于 Typer 构建的命令行工具，通过子命令的形式整合四大功能模块：
+基于 Typer 构建的命令行工具，通过子命令的形式整合：
 - search：在 arXiv、Crossref、Semantic Scholar 等来源检索论文。
 - parse：解析 PDF，提取文本、章节、参考文献与元数据。
 - ref：管理 BibTeX 文献库（添加、搜索、导出）。
 - write：写作辅助（摘要、翻译、润色、综述、大纲）。
+- parajudge：多智能体辩论与裁决系统（Phase 0/1/2 全流程）。
 """
 from __future__ import annotations
 
@@ -45,6 +46,9 @@ app.add_typer(search_app, name="search")
 app.add_typer(parse_app, name="parse")
 app.add_typer(ref_app, name="ref")
 app.add_typer(write_app, name="write")
+
+parajudge_app = typer.Typer(help="ParaJudge 多智能体辩论系统", no_args_is_help=True)
+app.add_typer(parajudge_app, name="parajudge")
 
 console = Console()
 
@@ -513,6 +517,69 @@ def write_outline(
     except Exception as exc:
         typer.secho(f"生成大纲失败：{exc}", fg="red", err=True)
         raise typer.Exit(code=1)
+
+
+# ---------------------------------------------------------------------------
+# parajudge：多智能体辩论与裁决
+# ---------------------------------------------------------------------------
+
+@parajudge_app.command("run")
+def parajudge_run(
+    problem: str = typer.Argument(..., help="待辩论的问题文本"),
+    rounds: int = typer.Option(3, "--rounds", "-r", min=1, max=8, help="辩论轮数（每轮正反各一次发言）"),
+    provider: str = typer.Option("mock", "--provider", help="LLM 提供商：mock / openai / dashscope"),
+    model: str = typer.Option("mock-model", "--model", help="具体模型名（如 gpt-4o / qwen-max）"),
+    max_evidence: int = typer.Option(20, "--max-evidence", help="证据包最大条数"),
+    save_json: str = typer.Option(None, "--save-json", help="保存结构化结果到 JSON 文件"),
+    save_md: str = typer.Option(None, "--save-md", help="保存 Markdown 裁决书到文件"),
+    silent: bool = typer.Option(False, "--silent", help="不打印控制台报告"),
+) -> None:
+    """执行完整的 ParaJudge 辩论与裁决流程。
+
+    示例：
+      # 使用 mock LLM（离线演示，无需 API Key）
+      python cli.py parajudge run "LLM 是否会取代人类大部分工作？"
+
+      # 使用真实 LLM（需要 OPENAI_API_KEY 或 DASHSCOPE_API_KEY）
+      python cli.py parajudge run "量子计算将如何改变密码学？" --provider openai --model gpt-4o
+
+      # 保存结构化结果
+      python cli.py parajudge run "LLM 是否会取代人类大部分工作？" --save-md report.md --save-json report.json
+    """
+    from src.orchestration.orchestrator import run_parajudge, render_console, render_markdown
+
+    console.print(f"[bold green]→[/bold green] ParaJudge：{problem}")
+    console.print(f"             provider={provider}, model={model}, rounds={rounds}")
+    console.print()
+
+    # Phase 0：证据构建
+    console.print(f"  [1/4] 构建证据包...")
+    # 使用单函数一步执行（内部包含全部阶段）
+    result = run_parajudge(
+        problem=problem,
+        provider=provider,
+        model=model,
+        rounds=rounds,
+        max_evidence=max_evidence,
+        enable_llm_review=True,
+    )
+
+    # 输出报告
+    if not silent:
+        console.print(render_console(result))
+
+    # 保存
+    if save_json:
+        out_path = save_json if os.path.isabs(save_json) else os.path.join(os.getcwd(), save_json)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(result.model_dump_json(indent=2))
+        console.print(f"[green]✓[/green] 已保存 JSON：{out_path}")
+
+    if save_md:
+        out_path = save_md if os.path.isabs(save_md) else os.path.join(os.getcwd(), save_md)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(render_markdown(result))
+        console.print(f"[green]✓[/green] 已保存 Markdown：{out_path}")
 
 
 def main() -> None:
