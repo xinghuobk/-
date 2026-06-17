@@ -1,0 +1,95 @@
+# ============================================================
+# ParaJudge v0.3 · Docker Compose
+# ============================================================
+# 服务：
+#   ollama     - 本地 LLM 服务（qwen2.5:7b，已预拉取）
+#   parajudge  - 实验容器（数据下载 / 消融 / 统计）
+#
+# 用法：
+#   # 开发/交互模式（进入容器 bash）
+#   docker compose up -d ollama
+#   docker compose run --rm parajudge bash
+#
+#   # 一键跑全部实验
+#   docker compose run --rm parajudge --mode=full
+#
+#   # 单独跑某步
+#   docker compose run --rm parajudge --mode=download
+#   docker compose run --rm parajudge --mode=llm
+#   docker compose run --rm parajudge --mode=ablation
+#   docker compose run --rm parajudge --mode=statistics
+# ============================================================
+
+services:
+
+  # ── Ollama 本地 LLM 服务 ───────────────────────────────
+  ollama:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ollama
+      args:
+        OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+    container_name: parajudge_ollama
+    image: parajudge/ollama:v0.3
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_MODELS=/models
+    volumes:
+      # 模型持久化（避免每次重建都重新下载 ~6GB）
+      - ollama_models:/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - parajudge_net
+
+  # ── ParaJudge 实验容器 ─────────────────────────────────
+  parajudge:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: parajudge_exp
+    image: parajudge:v0.3
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_HOST=ollama
+      - PYTHONPATH=/workspace
+      # 可选：OpenAI API（用云端补充本地）
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      # 持久化实验数据
+      - ./data:/workspace/data
+      - ./experiments:/workspace/experiments
+      - ./reports:/workspace/reports
+      # 源码热更新（开发时挂载）
+      - ./src:/workspace/src:ro
+      - ./scripts:/workspace/scripts:ro
+      - ./backend:/workspace/backend:ro
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "${RESTART_POLICY:-no}"
+    networks:
+      - parajudge_net
+    # GPU 支持（取消注释需要 nvidia-container-toolkit）
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+networks:
+  parajudge_net:
+    driver: bridge
+
+volumes:
+  ollama_models:
+    driver: local
