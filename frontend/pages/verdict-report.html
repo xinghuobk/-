@@ -544,14 +544,50 @@ body {
 
   <!-- 操作按钮 -->
   <div class="action-row">
-    <button class="action-btn btn-primary">📄 导出完整裁决书</button>
-    <button class="action-btn btn-secondary">🔄 重新辩论</button>
-    <button class="action-btn btn-secondary">📊 对比历史裁决</button>
+    <button class="action-btn btn-primary" onclick="exportVerdict()">📄 导出完整裁决书</button>
+    <a class="action-btn btn-secondary" href="debate-room.html">🔄 重新辩论</a>
+    <button class="action-btn btn-secondary" onclick="window.print()">🖨️ 打印</button>
   </div>
 
 </div>
 
 <script>
+// 从 sessionStorage 加载最新辩论结果（如有）
+(function loadLatestResult() {
+    const raw = sessionStorage.getItem('parajudge_result');
+    if (!raw) return;
+    try {
+        const r = JSON.parse(raw);
+        console.log('[ParaJudge] 最新辩论结果:', r.run_id, '胜方:', r.judgment?.winner);
+        // 更新副标题
+        if (r.judgment) {
+            const winnerLabel = r.judgment.winner === 'pro' ? '正方胜出 🏆' :
+                                r.judgment.winner === 'con' ? '反方胜出 🏆' : '平局 ⚖️';
+            const sub = document.querySelector('.verdict-subtitle');
+            if (sub) {
+                sub.textContent = `最终裁决：${winnerLabel} · 正方 ${r.judgment.pro_final_score} 分 / 反方 ${r.judgment.con_final_score} 分`;
+            }
+        }
+    } catch (e) {
+        console.warn('加载结果失败', e);
+    }
+})();
+
+function exportVerdict() {
+    const raw = sessionStorage.getItem('parajudge_result');
+    if (!raw) {
+        alert('暂无最新结果，请先到辩论室完成一场辩论');
+        return;
+    }
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `parajudge-verdict-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // 动画：分数条渐进填充
 setTimeout(() => {
   document.querySelectorAll('.score-visual-fill').forEach(el => {
