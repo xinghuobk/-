@@ -65,7 +65,5 @@ class JudgmentConfig:
     REBUTTAL_MIN_KEYWORDS: int = 2      # 反驳中必须包含对方论点的关键词数量
 
 
-from dataclasses import dataclass
-
 # 全局单例（不可变）
 CFG = JudgmentConfig()
