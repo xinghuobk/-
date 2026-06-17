@@ -1,0 +1,27 @@
+{
+  "dataset": "ibm_arg_quality",
+  "provider": "mock",
+  "model": "mock-model",
+  "sample_size": 3,
+  "spearman": -0.5,
+  "kendall": -0.3333,
+  "mae": 0.136,
+  "rmse": 0.1527,
+  "per_sample": [
+    {
+      "topic": "Universal Basic Income",
+      "gt": 0.82,
+      "pred": 0.706
+    },
+    {
+      "topic": "Death Penalty",
+      "gt": 0.75,
+      "pred": 0.686
+    },
+    {
+      "topic": "Climate Change Policy",
+      "gt": 0.91,
+      "pred": 0.68
+    }
+  ]
+}

@@ -24,6 +24,131 @@ EXP_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ============================================================
+# 工具：统计前提假设检验
+# ============================================================
+
+def check_normality(data: List[float], alpha: float = 0.05) -> Dict[str, Any]:
+    """检验数据是否服从正态分布（Shapiro-Wilk）。
+
+    Returns:
+        {"normal": bool, "p_value": float, "test": "shapiro-wilk"}
+    """
+    stats, _ = try_import_scipy()
+    if not stats or len(data) < 3:
+        return {"normal": True, "p_value": 1.0, "test": "skipped (insufficient data)"}
+    try:
+        stat, p = stats.shapiro(data)
+        return {"normal": p >= alpha, "p_value": round(p, 4), "test": "shapiro-wilk"}
+    except Exception:
+        return {"normal": True, "p_value": 1.0, "test": "shapiro-wilk (error)"}
+
+
+def check_homoscedasticity(*groups: List[float], alpha: float = 0.05) -> Dict[str, Any]:
+    """检验多组数据方差是否齐性（Levene's test）。
+
+    Returns:
+        {"equal": bool, "p_value": float, "test": "levene"}
+    """
+    stats, _ = try_import_scipy()
+    if not stats or any(len(g) < 2 for g in groups):
+        return {"equal": True, "p_value": 1.0, "test": "skipped (insufficient data)"}
+    try:
+        stat, p = stats.levene(*groups)
+        return {"equal": p >= alpha, "p_value": round(p, 4), "test": "levene"}
+    except Exception:
+        return {"equal": True, "p_value": 1.0, "test": "levene (error)"}
+
+
+def choose_test_for_paired(
+    pro_scores: List[float],
+    con_scores: List[float],
+) -> Dict[str, Any]:
+    """根据前提假设选择配对检验方法。
+
+    逻辑：
+    - 差值正态 → 用 paired t-test（更强）
+    - 差值非正态 → 用 Wilcoxon signed-rank（非参数替代）
+    """
+    diffs = [p - c for p, c in zip(pro_scores, con_scores)]
+    norm = check_normality(diffs)
+    stats, _ = try_import_scipy()
+
+    if norm["normal"] and stats:
+        t_stat, p_value = stats.ttest_rel(pro_scores, con_scores)
+        return {
+            "test": "paired t-test",
+            "statistic": round(t_stat, 4),
+            "p_value": round(p_value, 6),
+            "normality_check": norm,
+            "fallback_used": False,
+        }
+    else:
+        p_value, method_detail = stdlib_wilcoxon(pro_scores, con_scores)
+        return {
+            "test": "wilcoxon signed-rank（非参数，差值非正态时更可靠）",
+            "p_value": round(p_value, 6),
+            "normality_check": norm,
+            "fallback_used": True,
+        }
+
+
+def choose_test_for_anova(groups: Dict[str, List[float]]) -> Dict[str, Any]:
+    """根据前提假设选择 ANOVA 方法。
+
+    逻辑：
+    - 方差齐性 → 用 one-way ANOVA（更强）
+    - 方差不齐 → 用 Welch's ANOVA（修正）或 Kruskal-Wallis（非参数）
+    """
+    group_lists = list(groups.values())
+    names = list(groups.keys())
+    homo = check_homoscedasticity(*group_lists)
+    stats, _ = try_import_scipy()
+
+    if homo["equal"] and stats:
+        f_stat, p_value = stats.f_oneway(*group_lists)
+        return {
+            "test": "one-way ANOVA",
+            "statistic": round(f_stat, 4),
+            "p_value": round(p_value, 6),
+            "homoscedasticity_check": homo,
+            "fallback_used": False,
+        }
+    elif stats:
+        # Welch's ANOVA（不假设方差齐性）
+        try:
+            # scipy 没有直接 Welch's ANOVA，用 Brown-Forsythe 近似
+            f_stat, p_value = stats.levene(*group_lists)
+            return {
+                "test": "levene test（方差不齐，请参考）",
+                "statistic": round(f_stat, 4),
+                "p_value": round(p_value, 6),
+                "homoscedasticity_check": homo,
+                "fallback_used": True,
+                "note": "方差不齐，建议使用 Kruskal-Wallis 非参数检验",
+            }
+        except Exception:
+            pass
+
+    # Kruskal-Wallis（非参数）
+    from scipy.stats import kruskal
+    try:
+        h_stat, p_value = kruskal(*group_lists)
+        return {
+            "test": "kruskal-wallis（非参数，对方差非正态/非齐性更鲁棒）",
+            "statistic": round(h_stat, 4),
+            "p_value": round(p_value, 6),
+            "homoscedasticity_check": homo,
+            "fallback_used": True,
+        }
+    except Exception:
+        return {
+            "test": "无法执行检验",
+            "homoscedasticity_check": homo,
+            "fallback_used": True,
+        }
+
+
+# ============================================================
 # 工具：t 检验 / Wilcoxon / Cohen's d
 # ============================================================
 
@@ -88,52 +213,47 @@ def exp1_T1_HITS_vs_PageRank(llm_jsonl: Path) -> Dict[str, Any]:
 
 
 def exp7_T4_Murphy_vs_Dempster(llm_jsonl: Path) -> Dict[str, Any]:
-    """实验 7：T4 Murphy vs Dempster 在高冲突场景的裁决质量差异。"""
-    stats, np = try_import_scipy()
+    """实验 7：T4 在高冲突场景的裁决质量差异。
+
+    注意：当前使用 pro_score vs con_score 作为代理变量。
+    真正应该比较的是 heuristic_fusion vs ds_orthographic_combination 的结果。
+    当 T4 两路数据都可用时，应改为比较两条融合路径的输出。
+    """
     if not llm_jsonl.exists():
         return {"status": "SKIPPED", "reason": f"missing {llm_jsonl}"}
 
-    # 真实读取 JSONL，提取 high_conflict 场景下的裁决得分
-    high_conflict_pro = []
-    low_conflict_pro = []
+    # 真实读取 JSONL
+    pro_scores = []
+    con_scores = []
     with llm_jsonl.open() as f:
         for line in f:
             rec = json.loads(line)
             if rec.get("status") != "OK":
                 continue
-            mr = rec.get("moderator_report") or {}
-            # 真实现象：Murphy 和 Dempster 分数差
-            # 没有真实 DS/Dempster 两路数据时只能基于裁决分数本身
-            # 简化：pro_score 作为质量代理
-            unc = rec.get("judgment_uncertainties") or []
-            high_conflict_pro.append(rec.get("pro_score", 0.0))
-            low_conflict_pro.append(rec.get("con_score", 0.0))
+            pro_scores.append(rec.get("pro_score", 0.0))
+            con_scores.append(rec.get("con_score", 0.0))
 
-    if len(high_conflict_pro) < 5:
-        return {"status": "INSUFFICIENT_DATA", "n": len(high_conflict_pro)}
+    if len(pro_scores) < 5:
+        return {"status": "INSUFFICIENT_DATA", "n": len(pro_scores)}
 
-    if stats:
-        t_stat, p_value = stats.ttest_rel(high_conflict_pro, low_conflict_pro)
-        method = "paired t-test (scipy.stats.ttest_rel)"
-    else:
-        p_value, method = stdlib_wilcoxon(high_conflict_pro, low_conflict_pro)
-
-    d = cohens_d(high_conflict_pro, low_conflict_pro)
+    # --- 使用前提假设感知的检验选择 ---
+    result = choose_test_for_paired(pro_scores, con_scores)
+    d = cohens_d(pro_scores, con_scores)
     return {
         "status": "OK",
-        "n": len(high_conflict_pro),
-        "mean_pro": round(sum(high_conflict_pro) / len(high_conflict_pro), 4),
-        "mean_con": round(sum(low_conflict_pro) / len(low_conflict_pro), 4),
-        "p_value": round(p_value, 6),
-        "cohens_d": round(d, 4),
-        "method": method,
-        "conclusion": "显著" if p_value < 0.05 else "不显著",
+        "n": len(pro_scores),
+        "p_value": result.get("p_value"),
+        "effect_size_cohens_d": round(d, 4),
+        "normality_check": result.get("normality_check", {}),
+        "test_used": result.get("test", "unknown"),
+        "test_statistic": result.get("statistic", None),
+        "fallback_used": result.get("fallback_used", False),
+        "note": "比较 pro_score vs con_score（需接真实 T4 双路径数据才有意义）",
     }
 
 
 def exp10_ablation_anova(abl_jsonl: Path) -> Dict[str, Any]:
-    """实验 10：6 组消融 ANOVA。"""
-    stats, np = try_import_scipy()
+    """实验 10：6 组消融 ANOVA（使用前提假设感知检验选择）。"""
     if not abl_jsonl.exists():
         return {"status": "SKIPPED", "reason": f"missing {abl_jsonl}"}
 
@@ -148,27 +268,22 @@ def exp10_ablation_anova(abl_jsonl: Path) -> Dict[str, Any]:
     if len(by_abl) < 2:
         return {"status": "INSUFFICIENT_GROUPS"}
 
-    groups = [v for v in by_abl.values() if len(v) > 0]
-    if stats:
-        F, p = stats.f_oneway(*groups)
-        method = "one-way ANOVA (scipy.stats.f_oneway)"
-    else:
-        # stdlib 简化：直接报各组均值
-        return {
-            "status": "OK_NO_SCIPY",
-            "method": "stdlib 简化版（仅各组均值）",
-            "group_means": {k: round(sum(v) / len(v), 4) for k, v in by_abl.items()},
-            "n_per_group": {k: len(v) for k, v in by_abl.items()},
-        }
+    # --- 使用前提假设感知的 ANOVA 选择 ---
+    result = choose_test_for_anova(dict(by_abl))
+    group_means = {k: round(sum(v) / len(v), 4) for k, v in by_abl.items()}
 
     return {
         "status": "OK",
-        "n_groups": len(groups),
-        "F_statistic": round(F, 4),
-        "p_value": round(p, 6),
-        "method": method,
-        "conclusion": "组间差异显著" if p < 0.05 else "组间差异不显著",
-        "group_means": {k: round(sum(v) / len(v), 4) for k, v in by_abl.items()},
+        "n_groups": len(by_abl),
+        "p_value": result.get("p_value"),
+        "test_used": result.get("test", "unknown"),
+        "test_statistic": result.get("statistic", None),
+        "homoscedasticity_check": result.get("homoscedasticity_check", {}),
+        "fallback_used": result.get("fallback_used", False),
+        "conclusion": "组间差异显著" if result.get("p_value", 1.0) < 0.05 else "组间差异不显著",
+        "group_means": group_means,
+        "group_sizes": {k: len(v) for k, v in by_abl.items()},
+        "note": result.get("note", ""),
     }
 
 

@@ -22,16 +22,18 @@ from backend.models.schemas import (
     JudgeScore,
     ReasoningNode,
 )
+from src.judgment.judgment_config import CFG
 from src.writer.llm_client import LLMClient
-from src.debate.prompts import build_judge_prompt, JUDGE_ROLES
+from src.debate.prompts import build_judge_prompt, build_judge_prompt_v2, JUDGE_ROLES
 
 
 JUDGE_TYPES = list(JUDGE_ROLES.keys())  # ["evidence", "logic", "principle", "case", "innovation"]
 
 
 class JudgmentEngine:
-    def __init__(self, llm: LLMClient):
+    def __init__(self, llm: LLMClient, use_judge_v2: bool = False):
         self.llm = llm
+        self.use_judge_v2 = use_judge_v2
 
     # ------------------------------------------------------------------
     # 主入口
@@ -41,6 +43,7 @@ class JudgmentEngine:
         transcript: DebateTranscript,
         brief: EvidenceBrief,
         review: ReviewReport,
+        use_judge_v2: bool = False,
     ) -> JudgmentResult:
         t0 = time.perf_counter()
 
@@ -65,7 +68,10 @@ class JudgmentEngine:
         # 五位法官
         scores: List[JudgeScore] = []
         for judge_type in JUDGE_TYPES:
-            score = self._single_judge(judge_type, transcript.problem, brief, pro_args, con_args, review_summary)
+            if use_judge_v2 or self.use_judge_v2:
+                score = self._single_judge_v2(judge_type, transcript.problem, brief, pro_args, con_args, review_summary)
+            else:
+                score = self._single_judge(judge_type, transcript.problem, brief, pro_args, con_args, review_summary)
             scores.append(score)
 
         # 融合（LLM 法官评分）
@@ -76,11 +82,11 @@ class JudgmentEngine:
         pro_final = round(max(0.0, pro_raw + penalty["pro"]), 1)
         con_final = round(max(0.0, con_raw + penalty["con"]), 1)
 
-        # --- 修复：获胜阈值从 2.0 提高到 5.0 ---
+        # --- 修复：获胜阈值从 2.0 提高到 5.0（使用 CFG 配置）---
         winner = "tie"
-        if pro_final - con_final > 5.0:
+        if pro_final - con_final > CFG.WINNER_THRESHOLD:
             winner = "pro"
-        elif con_final - pro_final > 5.0:
+        elif con_final - pro_final > CFG.WINNER_THRESHOLD:
             winner = "con"
 
         # 推理链
@@ -103,13 +109,13 @@ class JudgmentEngine:
         if scores:
             pro_scores = [s.pro_score for s in scores]
             spread = max(pro_scores) - min(pro_scores) if pro_scores else 0
-            if spread > 25:
+            if spread > CFG.JUDGE_SPREAD_WARN:
                 uncertainties.append(
                     f"法官对正方评分分歧较大（{min(pro_scores)} ~ {max(pro_scores)}），表明论证质量不稳定。"
                 )
             con_scores = [s.con_score for s in scores]
             spread_c = max(con_scores) - min(con_scores) if con_scores else 0
-            if spread_c > 25:
+            if spread_c > CFG.JUDGE_SPREAD_WARN:
                 uncertainties.append(
                     f"法官对反方评分分歧较大（{min(con_scores)} ~ {max(con_scores)}）。"
                 )
@@ -140,12 +146,13 @@ class JudgmentEngine:
     # Moderator 惩罚提取
     # ------------------------------------------------------------------
     def _extract_moderator_penalty(self, transcript) -> Dict:
-        """从 moderator report 提取离题/重复等违规并计算惩罚分。
+        """从 moderator report 提取离题/重复等违规并计算惩罚分（使用 CFG 配置）。
 
-        规则（每项独立累加，上限 -15 分/方）：
-        - warn_off_topic: 每个违规论点扣 -4 分（离题是严重问题）
-        - warn_duplicate: 每个重复论点扣 -3 分
-        - warn_too_long: 每个超长论点扣 -1 分
+        规则（每项独立累加，上限 CFG.PENALTY_CAP 分/方）：
+        - warn_off_topic: 每个违规论点扣 CFG.PENALTY_OFF_TOPIC 分
+        - warn_no_rebuttal: 每个未反驳论点扣 CFG.PENALTY_OFF_TOPIC 分
+        - warn_duplicate: 每个重复论点扣 CFG.PENALTY_DUPLICATE 分
+        - warn_too_long: 每个超长论点扣 CFG.PENALTY_TOO_LONG 分
         """
         report = getattr(transcript, "moderator_report", None)
         if not report:
@@ -156,7 +163,6 @@ class JudgmentEngine:
         con_off_topic = 0
         pro_penalty = 0.0
         con_penalty = 0.0
-        MAX_PENALTY = -15.0
 
         for note in notes:
             action = note.get("action") if isinstance(note, dict) else None
@@ -164,8 +170,8 @@ class JudgmentEngine:
             if not action or not side:
                 continue
 
-            if action == "warn_off_topic":
-                delta = -4.0
+            if action in ("warn_off_topic", "warn_no_rebuttal"):
+                delta = CFG.PENALTY_OFF_TOPIC
                 if side == "pro":
                     pro_off_topic += 1
                     pro_penalty += delta
@@ -173,21 +179,21 @@ class JudgmentEngine:
                     con_off_topic += 1
                     con_penalty += delta
             elif action == "warn_duplicate":
-                delta = -3.0
+                delta = CFG.PENALTY_DUPLICATE
                 if side == "pro":
                     pro_penalty += delta
                 else:
                     con_penalty += delta
             elif action == "warn_too_long":
-                delta = -1.0
+                delta = CFG.PENALTY_TOO_LONG
                 if side == "pro":
                     pro_penalty += delta
                 else:
                     con_penalty += delta
 
         return {
-            "pro": max(pro_penalty, MAX_PENALTY),
-            "con": max(con_penalty, MAX_PENALTY),
+            "pro": max(pro_penalty, CFG.PENALTY_CAP),
+            "con": max(con_penalty, CFG.PENALTY_CAP),
             "pro_off_topic": pro_off_topic,
             "con_off_topic": con_off_topic,
         }
@@ -215,26 +221,26 @@ class JudgmentEngine:
         )
         response = self.llm.call_json(prompt, max_tokens=500, temperature=0.2)
 
-        # 回退逻辑：如果失败，给一个中性评分
+        # 回退逻辑：如果失败，给一个中性评分（使用 CFG）
         if not isinstance(response, dict) or "pro_score" not in response:
             return JudgeScore(
                 judge_type=judge_type,
                 judge_name=judge_name,
-                pro_score=50.0,
-                con_score=50.0,
+                pro_score=CFG.SCORE_DEFAULT,
+                con_score=CFG.SCORE_DEFAULT,
                 pro_feedback="（LLM 未能返回有效评分，使用默认值）",
                 con_feedback="（LLM 未能返回有效评分，使用默认值）",
                 reasoning="解析失败，使用系统回退评分。",
             )
 
-        def _safe_float(x, default: float = 50.0) -> float:
+        def _safe_float(x, default: float = CFG.SCORE_DEFAULT) -> float:
             try:
                 return float(x)
             except (TypeError, ValueError):
                 return default
 
-        pro_score = max(0.0, min(100.0, _safe_float(response.get("pro_score"), 50.0)))
-        con_score = max(0.0, min(100.0, _safe_float(response.get("con_score"), 50.0)))
+        pro_score = max(CFG.SCORE_MIN, min(CFG.SCORE_MAX, _safe_float(response.get("pro_score"), CFG.SCORE_DEFAULT)))
+        con_score = max(CFG.SCORE_MIN, min(CFG.SCORE_MAX, _safe_float(response.get("con_score"), CFG.SCORE_DEFAULT)))
         return JudgeScore(
             judge_type=judge_type,
             judge_name=judge_name,
@@ -243,6 +249,61 @@ class JudgmentEngine:
             pro_feedback=str(response.get("pro_feedback", "")),
             con_feedback=str(response.get("con_feedback", "")),
             reasoning=str(response.get("reasoning", "")),
+        )
+
+    # ------------------------------------------------------------------
+    # 单法官评分 v2（事实/价值论证区分）
+    # ------------------------------------------------------------------
+    def _single_judge_v2(
+        self,
+        judge_type: str,
+        problem: str,
+        brief: EvidenceBrief,
+        pro_args: List[Dict],
+        con_args: List[Dict],
+        review_summary: str,
+    ) -> JudgeScore:
+        """v2 法官：区分事实声明与价值声明，分别评分。"""
+        judge_name = JUDGE_ROLES.get(judge_type, ("通用法官", ""))[0]
+        prompt = build_judge_prompt_v2(
+            judge_type=judge_type,
+            problem=problem,
+            evidence_items=brief.items,
+            pro_arguments=pro_args,
+            con_arguments=con_args,
+            review_summary=review_summary,
+        )
+        response = self.llm.call_json(prompt, max_tokens=600, temperature=0.2)
+
+        def _safe_float(x, default: float = CFG.SCORE_DEFAULT) -> float:
+            try:
+                return float(x)
+            except (TypeError, ValueError):
+                return default
+
+        # 解析事实/价值评分（可选字段，容错）
+        pro_fact = _safe_float(response.get("pro_fact_score"), None)
+        con_fact = _safe_float(response.get("con_fact_score"), None)
+        pro_value = _safe_float(response.get("pro_value_score"), None)
+        con_value = _safe_float(response.get("con_value_score"), None)
+
+        pro_score = max(CFG.SCORE_MIN, min(CFG.SCORE_MAX, _safe_float(response.get("pro_score"), CFG.SCORE_DEFAULT)))
+        con_score = max(CFG.SCORE_MIN, min(CFG.SCORE_MAX, _safe_float(response.get("con_score"), CFG.SCORE_DEFAULT)))
+
+        return JudgeScore(
+            judge_type=judge_type,
+            judge_name=judge_name,
+            pro_score=round(pro_score, 1),
+            con_score=round(con_score, 1),
+            pro_feedback=str(response.get("pro_feedback", "")),
+            con_feedback=str(response.get("con_feedback", "")),
+            reasoning=str(response.get("reasoning", "")),
+            pro_fact_score=pro_fact,
+            con_fact_score=con_fact,
+            pro_value_score=pro_value,
+            con_value_score=con_value,
+            pro_fact_claims=response.get("pro_fact_claims", []),
+            con_fact_claims=response.get("con_fact_claims", []),
         )
 
     # ------------------------------------------------------------------

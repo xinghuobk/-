@@ -54,12 +54,24 @@ class LLMClient:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         timeout: float = 60.0,
+        seed: Optional[int] = None,
     ):
+        """初始化 LLM 客户端。
+
+        Args:
+            provider: 提供商（mock/openai/dashscope/ollama）
+            model: 模型名（空值自动使用 provider 默认）
+            api_key: API 密钥（openai/dashscope）
+            base_url: 自定义 API 端点
+            timeout: 请求超时（秒）
+            seed: 随机种子（仅 mock 模式生效；设为 None 则每次不同，设为 int 则可复现）
+        """
         self.provider = provider.strip().lower()
         self.model = self._normalize_model_name(self.provider, model)
         self.api_key = api_key
         self.base_url = (base_url or self._default_base_url(self.provider)).rstrip("/")
         self.timeout = timeout
+        self._seed = seed  # 用于 mock 模式的确定性随机
 
     @staticmethod
     def _default_base_url(provider: str) -> str:
@@ -265,13 +277,30 @@ class LLMClient:
             pro_fb = "论证有一定说服力，但未形成压倒性优势。"
             con_fb = "论证有一定说服力，但未形成压倒性优势。"
 
-        return json.dumps({
+        is_v2 = "事实声明" in prompt or "价值声明" in prompt or "F-claim" in prompt
+        result = {
             "pro_score": pro_score,
             "con_score": con_score,
             "pro_feedback": pro_fb,
             "con_feedback": con_fb,
             "reasoning": "综合考虑证据权威度、推理链完整性和结论与问题的相关性后给出评分。",
-        }, ensure_ascii=False, indent=2)
+        }
+        if is_v2:
+            # v2：追加事实/价值区分字段
+            rng_fact = random.Random(seed % (2**31) + 7)
+            result.update({
+                "pro_fact_score": max(0, min(100, base_pro + rng_fact.randint(-6, 6))),
+                "con_fact_score": max(0, min(100, base_con + rng_fact.randint(-6, 6))),
+                "pro_value_score": max(0, min(100, base_pro + rng_fact.randint(-6, 6))),
+                "con_value_score": max(0, min(100, base_con + rng_fact.randint(-6, 6))),
+                "pro_fact_claims": [
+                    f"正方事实声明{i+1}（Mock）" for i in range(rng_fact.randint(1, 3))
+                ],
+                "con_fact_claims": [
+                    f"反方事实声明{i+1}（Mock）" for i in range(rng_fact.randint(1, 3))
+                ],
+            })
+        return json.dumps(result, ensure_ascii=False, indent=2)
 
     # ------------------------------------------------------------------
     # provider: openai（若未配置 key 则降级为 mock）

@@ -1,6 +1,6 @@
 """ParaJudge 主编排器（Orchestrator）。
 
-Phase 0 · 证据构建 → Phase 1 · 辩论 → Phase 2.1 · 审理 → Phase 2.2 · 裁决
+Phase 0 · 证据构建 → Phase 1 · 辩论 → Phase 2.0 · 事实核查 → Phase 2.1 · 审理 → Phase 2.2 · 裁决
 """
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from backend.models.schemas import FullPipelineOutput, EvidenceBrief
 from src.debate.evidence_builder import build_evidence_brief
 from src.debate.simple_debate import SimpleDebate
 from src.debate.moderator import Moderator, ModeratorConfig, ModeratorStrictness
+from src.judgment.fact_checker import FactChecker
 from src.judgment.review_engine import ReviewEngine
 from src.judgment.judgment_engine import JudgmentEngine
 from src.writer.llm_client import LLMClient
@@ -30,6 +31,8 @@ def run_parajudge(
     enable_t1_aebg: bool = True,
     enable_t3_ks: bool = True,
     enable_t4_ds: bool = True,
+    use_judge_v2: bool = False,
+    enable_fact_check: bool = False,
 ) -> FullPipelineOutput:
     """执行完整的 ParaJudge 流程。
 
@@ -100,37 +103,62 @@ def run_parajudge(
                 transcript.moderator_report = {}
             transcript.moderator_report["t3_ks_error"] = str(e)
 
+    # ── Phase 2.0 · 事实核查（可选）──────────────────
+    fact_check = None
+    if enable_fact_check:
+        checker = FactChecker(llm)
+        fact_check = checker.run(transcript, problem)
+
     # ── Phase 2.1 · 审理 ───────────────────────────────
     reviewer = ReviewEngine(llm=llm, enable_llm_check=enable_llm_review)
     review = reviewer.run(transcript, brief)
 
     # ── Phase 2.2 · 裁决（含 T4 DS 融合可选）─────────
-    judge = JudgmentEngine(llm)
+    judge = JudgmentEngine(llm, use_judge_v2=use_judge_v2)
     judgment = judge.run(transcript, brief, review)
 
-    # ── T4 DS 证据理论融合（重算最终分） ──────────────
+    # ── T4 双路证据融合 ────────────────────────────────
     if enable_t4_ds:
         try:
-            from src.judgment.innovation import ds_evidence_fusion
-            ds_result = ds_evidence_fusion(judgment.judge_scores)
-            # 注入不确定性信息（不覆盖主分数，避免破坏兼容）
+            from src.judgment.innovation import (
+                ds_evidence_fusion,
+                ds_orthographic_combination,
+            )
+
+            # 路径 1：启发式融合（加权平均 + renormalize）
+            heuristic = ds_evidence_fusion(judgment.judge_scores)
+            heuristic_label = heuristic.get("interpretation", "")
+
+            # 路径 2：DS 正交和近似
+            ds_approx = ds_orthographic_combination(judgment.judge_scores)
+            ds_approx_label = ds_approx.get("interpretation", "")
+
+            # 注入不确定性信息
             if judgment.uncertainties is None:
                 judgment.uncertainties = []
             judgment.uncertainties.append(
-                f"T4 DS 融合置信度 = {ds_result.get('confidence', 0):.2f} | "
-                f"支持正方 mass={ds_result.get('mass_pro', 0):.2f}, "
-                f"反方 mass={ds_result.get('mass_con', 0):.2f}"
+                f"T4 启发式融合：{heuristic_label} "
+                f"（confidence={heuristic.get('confidence', 0):.2f}）"
             )
+            judgment.uncertainties.append(
+                f"T4 DS 正交和近似：{ds_approx_label} "
+                f"（confidence={ds_approx.get('confidence', 0):.2f}, K冲突={ds_approx.get('conflict_K', 0):.2f}）"
+            )
+            # 存储两路结果（供 JSONL 输出）
+            judgment._t4_heuristic = heuristic
+            judgment._t4_ds_approx = ds_approx
+
         except Exception as e:
             if judgment.uncertainties is None:
                 judgment.uncertainties = []
-            judgment.uncertainties.append(f"T4 DS 融合失败: {e}")
+            judgment.uncertainties.append(f"T4 融合失败: {e}")
 
     return FullPipelineOutput(
         run_id=str(uuid.uuid4())[:8],
         problem=problem,
         evidence_brief=brief,
         transcript=transcript,
+        fact_check=fact_check,
         review=review,
         judgment=judgment,
         total_time_sec=round(time.perf_counter() - t_start, 2),
@@ -307,6 +335,25 @@ def render_markdown(output: FullPipelineOutput) -> str:
         parts.extend(["", "## 不确定性与限制", ""])
         for u in j.uncertainties:
             parts.append(f"- ⚠ {u}")
+
+    # ── Phase 2.0 · 事实核查报告 ───────────────────────
+    fc = output.fact_check
+    if fc and fc.claims:
+        parts.extend(["", "## 事实核查报告", ""])
+        parts.append(f"**结论**：{fc.summary}")
+        parts.extend(["", "| 声明 | 类别 | 裁决 | 置信度 |", "| --- | --- | --- | --- |"])
+        verdict_map = {
+            "verified": "✅ 已验证",
+            "refuted": "❌ 已证伪",
+            "uncertain": "❓ 证据不足",
+            "out_of_scope": "💭 价值/观点",
+        }
+        for c in fc.claims[:15]:
+            v = verdict_map.get(c.verdict.value, c.verdict.value)
+            is_fact = "事实" if c.is_factual else "价值"
+            parts.append(
+                f"| {c.content[:60]}... | {is_fact} | {v} | {c.confidence:.2f} |"
+            )
 
     if r.issues:
         parts.extend(["", "## 审理发现的问题", ""])

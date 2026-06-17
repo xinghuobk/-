@@ -150,6 +150,11 @@ def run_single(question: Dict[str, Any], provider: str, model: str,
         rec["total_time_sec"] = out.total_time_sec
         rec["moderator_report"] = out.transcript.moderator_report
         rec["judgment_uncertainties"] = out.judgment.uncertainties
+        # T4 双路融合结果
+        if hasattr(out.judgment, "_t4_heuristic") and out.judgment._t4_heuristic:
+            rec["t4_heuristic"] = out.judgment._t4_heuristic
+        if hasattr(out.judgment, "_t4_ds_approx") and out.judgment._t4_ds_approx:
+            rec["t4_ds_approx"] = out.judgment._t4_ds_approx
         rec["status"] = "OK"
     except Exception as e:
         rec["status"] = "ERROR"

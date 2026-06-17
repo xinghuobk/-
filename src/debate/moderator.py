@@ -61,10 +61,11 @@ class ModeratorConfig:
 class ModeratorAction(str, Enum):
     PASS = "pass"                         # 通过
     WARN_OFF_TOPIC = "warn_off_topic"     # 警告：跑题
-    WARN_DUPLICATE = "warn_duplicate"     # 警告：重复
-    WARN_TOO_LONG = "warn_too_long"       # 警告：超时/超长
-    INTERVENE = "intervene"               # 主持人主动干预
-    END_DEBATE = "end_debate"             # 提前结束辩论
+    WARN_DUPLICATE = "warn_duplicate"    # 警告：重复
+    WARN_TOO_LONG = "warn_too_long"      # 警告：超时/超长
+    WARN_NO_REBUTTAL = "warn_no_rebuttal"  # 警告：未回应对方最新论点
+    INTERVENE = "intervene"                # 主持人主动干预
+    END_DEBATE = "end_debate"            # 提前结束辩论
 
 
 @dataclass
@@ -89,6 +90,9 @@ class ModeratorReport:
     avg_turn_sec: float = 0.0
     early_termination: bool = False
     early_termination_reason: Optional[str] = None
+    rebuttal_checks: int = 0         # 反驳检查次数
+    rebuttal_passed: int = 0         # 有效反驳次数
+    rebuttal_failed: int = 0         # 未反驳次数
 
     def to_dict(self) -> Dict:
         return {
@@ -110,6 +114,13 @@ class ModeratorReport:
             "avg_turn_sec": round(self.avg_turn_sec, 2),
             "early_termination": self.early_termination,
             "early_termination_reason": self.early_termination_reason,
+            "rebuttal_stats": {
+                "total_checks": self.rebuttal_checks,
+                "passed": self.rebuttal_passed,
+                "failed": self.rebuttal_failed,
+                "pass_rate": round(self.rebuttal_passed / self.rebuttal_checks, 2)
+                    if self.rebuttal_checks > 0 else None,
+            },
         }
 
 
@@ -252,10 +263,79 @@ class Moderator:
                 self._record(note)
                 return note
 
-        # 5. 通过
-        note = ModeratorNote(action=ModeratorAction.PASS, target_arg_id=arg.arg_id)
+        # 5. 反驳检测（从第 2 轮起，检查是否回应了对方最新论点）
+        rebuttal_note = self._check_rebuttal(arg, history)
+        rebuttal_passed = False
+        if rebuttal_note:
+            self._record(rebuttal_note)
+            # 反驳失败仅记录，不阻断（warn 级别）
+            if rebuttal_note.action == ModeratorAction.WARN_NO_REBUTTAL:
+                return rebuttal_note
+            # 反驳通过 → 记录 PASS（含 round_index）
+            rebuttal_passed = True
+
+        # 6. 通过
+        note = ModeratorNote(
+            action=ModeratorAction.PASS,
+            target_arg_id=arg.arg_id,
+            round_index=arg.round_index,  # 用于 rebuttal_stats 计数
+            message="通过",
+        )
         self._record(note)
+        # 若反驳已通过，再记录一个 rebuttal PASS
+        if rebuttal_passed:
+            rebuttal_pass_note = ModeratorNote(
+                action=ModeratorAction.PASS,
+                target_arg_id=arg.arg_id,
+                round_index=arg.round_index,
+                message="反驳有效",
+            )
+            self._record(rebuttal_pass_note)
         return note
+
+    def _check_rebuttal(
+        self,
+        arg: DebateArgument,
+        history: List[DebateArgument],
+    ) -> Optional[ModeratorNote]:
+        """检查当前论点是否回应了对方最新论点（反驳检测）。
+
+        反驳检测逻辑：
+        - 从第 2 轮起，每方发言必须至少提及对方最新论点的 2 个关键词
+        - 若未提及 → warn_no_rebuttal
+        - 若有提及 → 通过（即使质量低也只是评分层面的事）
+        """
+        # 找对方最新论点
+        opponent_side = "con" if arg.side == "pro" else "pro"
+        opponent_args = [a for a in history if a.side == opponent_side]
+        if not opponent_args:
+            return None  # 对方没发言过，跳过
+
+        opponent_latest = max(opponent_args, key=lambda a: (a.round_index, a.timestamp or 0))
+
+        # 若在同一轮次且对方刚发言 → 需要反驳
+        if opponent_latest.round_index < arg.round_index:
+            # 计算关键词重叠
+            arg_toks = set(_tokenize(arg.content))
+            opp_toks = set(_tokenize(opponent_latest.content))
+
+            if not opp_toks:  # 对方论点为空，跳过
+                return None
+
+            overlap = len(arg_toks & opp_toks)
+            min_required = max(2, len(opp_toks) // 5)  # 至少 2 个或对方的 20%
+
+            if overlap < min_required:
+                return self._make_note(
+                    ModeratorAction.WARN_NO_REBUTTAL,
+                    arg,
+                    f"本轮发言未回应对方最新论点 [{opponent_latest.arg_id}] "
+                    f"（需至少重叠 {min_required} 个关键词，实际 {overlap} 个）。"
+                    f"请先直接回应对方论点的核心内容，再提出新论据。",
+                    severity="warn",
+                )
+
+        return None  # 有反驳或无需反驳 → 通过
 
     def on_debate_end(self, transcript: DebateTranscript) -> ModeratorReport:
         """辩论结束时调用，生成总结报告。"""
@@ -270,6 +350,19 @@ class Moderator:
         # 统计干预次数
         self.report.interventions = sum(1 for n in self.report.notes if n.action == ModeratorAction.INTERVENE)
         self.report.warnings = sum(1 for n in self.report.notes if n.severity == "warn")
+        # 反驳统计
+        rebuttal_notes = [n for n in self.report.notes if n.action == ModeratorAction.WARN_NO_REBUTTAL]
+        # rebuttal PASS = PASS notes with message "反驳有效" (rebuttal passed)
+        rebuttal_pass_notes = [n for n in self.report.notes
+                              if n.action == ModeratorAction.PASS and "反驳" in (n.message or "")]
+        # 只有 round >= 2 的论点才需要反驳检测
+        eligible = [n for n in self.report.notes
+                    if n.action == ModeratorAction.PASS
+                    and n.round_index is not None
+                    and n.round_index >= 2]
+        self.report.rebuttal_checks = len(eligible) + len(rebuttal_notes)
+        self.report.rebuttal_failed = len(rebuttal_notes)
+        self.report.rebuttal_passed = len(rebuttal_pass_notes)
         return self.report
 
     # ------------------------------------------------------------------

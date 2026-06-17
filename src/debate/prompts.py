@@ -192,5 +192,118 @@ __all__ = [
     "build_debater_prompt",
     "build_review_prompt",
     "build_judge_prompt",
+    "build_judge_prompt_v2",   # 含事实/价值论证区分
     "JUDGE_ROLES",
+    "JUDGE_ROLES_V2",           # 新版含事实/价值指导
 ]
+
+
+# ============================================================
+# 新版法官 Prompt（含事实/价值论证区分）
+# ============================================================
+
+FACT_VALUE_CATEGORIZATION_INSTRUCTION = """
+【重要：区分事实论证与价值论证】
+
+在评分前，请先识别并区分论点中的两类声明：
+
+  📌 事实声明（F）：可以用外部证据验证真假的陈述
+    识别词：数据、年份、统计数字、事件名称、因果关系
+    评估标准：① 是否可验证 ② 证据是否充分 ③ 是否存在反例
+
+  ⚖️ 价值声明（V）：关于"应该/不应该"、"好/坏"、"重要/不重要"的判断
+    识别词：道德判断、政策建议、美学评价、优先级排序
+    评估标准：① 前提假设是否清晰 ② 是否承认价值多元性 ③ 是否平衡多方利益
+
+评分策略：
+  - 事实声明：基于可验证性评分（假事实直接判 0-30 分）
+  - 价值声明：基于论证质量评分（考虑价值多元性和前提假设）
+  - 混合声明：分别评分后加权平均
+  - 无论事实还是价值，证据质量始终重要
+
+【输出格式（严格 JSON，同时输出事实/价值分类）】\n
+{\n
+  "pro_score": <0-100 整数评分>,\n
+  "con_score": <0-100 整数评分>,\n
+  "pro_fact_score": <0-100 整数，正方事实声明得分>,\n
+  "pro_value_score": <0-100 整数，正方价值声明得分>,\n
+  "con_fact_score": <0-100 整数，反方事实声明得分>,\n
+  "con_value_score": <0-100 整数，反方价值声明得分>,\n
+  "pro_fact_claims": ["正方的事实声明1", "正方的事实声明2"],\n
+  "con_fact_claims": ["反方的事实声明1"],\n
+  "pro_feedback": "对正方的简短中文反馈（不超过 100 字）",\n
+  "con_feedback": "对反方的简短中文反馈（不超过 100 字）",\n
+  "reasoning": "你的评分依据和事实/价值分类说明（不超过 200 字）"\n
+}\n
+"""
+
+
+def build_judge_prompt_v2(
+    judge_type: str,
+    problem: str,
+    evidence_items: List[Dict],
+    pro_arguments: List[Dict],
+    con_arguments: List[Dict],
+    review_summary: Optional[str] = None,
+) -> str:
+    """新版法官 Prompt（v2）：包含事实/价值论证区分。
+
+    用法：
+        judge_prompt = build_judge_prompt_v2(
+            judge_type="evidence",
+            problem="...",
+            evidence_items=[...],
+            pro_arguments=[...],
+            con_arguments=[...],
+            review_summary="...",
+        )
+    """
+    name, criteria = JUDGE_ROLES.get(judge_type, ("通用法官", "综合评估"))
+
+    def _get_field(obj, key, default):
+        """同时支持 dict.get() 和 Pydantic model getattr。"""
+        if hasattr(obj, "get"):
+            return obj.get(key, default)
+        return getattr(obj, key, default)
+
+    def _format_evidence_list(items):
+        if not items:
+            return "（无证据）"
+        lines = []
+        for it in items[:15]:
+            lines.append(
+                f"  - [{_get_field(it, 'evidence_id', '?')}] "
+                f"{_get_field(it, 'title', '无标题')} | "
+                f"{_get_field(it, 'abstract_excerpt', '')[:120]}..."
+            )
+        return "\n".join(lines)
+
+    def _fmt_args(args, label):
+        if not args:
+            return f"{label}:（无）"
+        parts = []
+        for a in args:
+            refs = ", ".join(_get_field(a, "evidence_refs", [])) or "无"
+            parts.append(f"  - [{_get_field(a, 'id', '?')}] {_get_field(a, 'content', '')}  [引用: {refs}]")
+        return f"{label}:\n" + "\n".join(parts)
+
+    pro_text = _fmt_args(pro_arguments, "正方论点")
+    con_text = _fmt_args(con_arguments, "反方论点")
+    items_str = _format_evidence_list(evidence_items[:10])
+
+    review_block = ""
+    if review_summary:
+        review_block = (
+            "\n\n【审理报告（以下论点在评分时应被降权）】\n"
+            f"{review_summary}\n"
+        )
+
+    return (
+        f"你是一位「{name}」。{criteria}\n\n"
+        f"【问题】\n{problem}\n"
+        f"\n【证据包】\n{items_str}\n"
+        f"\n【{pro_text}】\n"
+        f"\n【{con_text}】\n"
+        + review_block
+        + FACT_VALUE_CATEGORIZATION_INSTRUCTION
+    )

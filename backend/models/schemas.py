@@ -596,6 +596,42 @@ class ReviewReport(BaseModel):
 
 
 # ============================================================
+# Phase 2.0 · 事实核查
+# ============================================================
+
+class ClaimVerdict(str, Enum):
+    VERIFIED = "verified"      # 有可靠证据支撑
+    REFUTED = "refuted"       # 与可靠证据矛盾
+    UNCERTAIN = "uncertain"   # 证据不足或无法判断
+    OUT_OF_SCOPE = "out_of_scope"  # 非事实性声明（价值/观点）
+
+
+class FactClaim(BaseModel):
+    """从论点中提取的原子事实声明"""
+    claim_id: str
+    source_arg_id: str
+    source_side: str          # "pro" / "con"
+    content: str              # 声明原文
+    verdict: ClaimVerdict = ClaimVerdict.UNCERTAIN
+    supporting_evidence: List[str] = Field(default_factory=list)   # 证据摘要列表
+    contradicting_evidence: List[str] = Field(default_factory=list)
+    confidence: float = 0.5  # 0.0-1.0，事实核查的置信度
+    is_factual: bool = True  # False = 价值/观点声明（无法核查）
+
+
+class FactCheckReport(BaseModel):
+    """Phase 2.0 事实核查报告：论点 → 原子声明 → 外部核查 → 裁决"""
+    claims: List[FactClaim] = Field(default_factory=list)
+    verified_count: int = 0
+    refuted_count: int = 0
+    uncertain_count: int = 0
+    out_of_scope_count: int = 0
+    summary: str = ""         # 总体核查结论
+    factuality_ratio: float = 0.0  # 事实性声明占总声明的比例
+    generation_time: float = 0.0
+
+
+# ============================================================
 # Phase 2.2 · 裁决
 # ============================================================
 
@@ -608,6 +644,13 @@ class JudgeScore(BaseModel):
     pro_feedback: str
     con_feedback: str
     reasoning: str
+    # 事实/价值论证区分（v2 prompt）
+    pro_fact_score: Optional[float] = None
+    con_fact_score: Optional[float] = None
+    pro_value_score: Optional[float] = None
+    con_value_score: Optional[float] = None
+    pro_fact_claims: List[str] = Field(default_factory=list)
+    con_fact_claims: List[str] = Field(default_factory=list)
 
 
 class ReasoningNode(BaseModel):
@@ -642,6 +685,7 @@ class FullPipelineOutput(BaseModel):
     problem: str
     evidence_brief: EvidenceBrief
     transcript: DebateTranscript
+    fact_check: Optional[FactCheckReport] = None  # Phase 2.0 事实核查（可选）
     review: ReviewReport
     judgment: JudgmentResult
     total_time_sec: float
