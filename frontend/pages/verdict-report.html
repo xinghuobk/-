@@ -551,6 +551,7 @@ body {
 
 </div>
 
+<script src="js/desktop-bridge.js"></script>
 <script>
 // 从 sessionStorage 加载最新辩论结果（如有）
 (function loadLatestResult() {
@@ -573,19 +574,23 @@ body {
     }
 })();
 
-function exportVerdict() {
+async function exportVerdict() {
     const raw = sessionStorage.getItem('parajudge_result');
     if (!raw) {
         alert('暂无最新结果，请先到辩论室完成一场辩论');
         return;
     }
-    const blob = new Blob([raw], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `parajudge-verdict-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const r = JSON.parse(raw);
+    // 桌面端：走原生保存对话框
+    const result = await Desktop.exportVerdictJSON(r);
+    if (result.ok && result.native) {
+        const openNow = confirm(`已保存到：\n${result.path}\n\n是否打开所在文件夹？`);
+        if (openNow) {
+            await Desktop.showInFolder(result.path);
+        }
+    } else if (result.fallback) {
+        console.log('已通过浏览器下载保存');
+    }
 }
 
 // 动画：分数条渐进填充
