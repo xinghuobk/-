@@ -1,0 +1,287 @@
+/* ============================================================
+   ParaJudge Design A — Soft Neon × Anime Conference
+   全局样式：所有页面统一风格
+   ============================================================ */
+
+:root {
+    /* 主色调 */
+    --bg-deep:        #050518;
+    --bg-panel:        #0c0e24;
+    --bg-card:        #121530;
+    --bg-card-hover:  #1a1d40;
+    --border:         rgba(255, 255, 255, 0.06);
+    --border-glow:    rgba(124, 111, 255, 0.35);
+
+    /* 霓虹色 */
+    --neon-pro:       #00d4ff;
+    --neon-pro-glow:  rgba(0, 212, 255, 0.25);
+    --neon-con:       #ff4d6d;
+    --neon-con-glow:  rgba(255, 77, 109, 0.25);
+    --neon-gold:      #ffd166;
+    --neon-gold-glow: rgba(255, 209, 102, 0.25);
+    --neon-purple:    #b794f4;
+    --neon-purple-glow: rgba(183, 148, 244, 0.25);
+    --neon-green:     #06d6a0;
+    --neon-orange:    #ff9f1c;
+
+    /* 文字 */
+    --text-primary:    #f0f2ff;
+    --text-secondary:  #8a92bd;
+    --text-muted:      #4d5580;
+
+    /* 动画 */
+    --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth:    cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast:  200ms;
+    --duration-med:   400ms;
+    --duration-slow:  700ms;
+
+    /* 字体 */
+    --font-jp:        'Noto Sans SC', 'Noto Sans SC', sans-serif;
+    --font-en:        'Sora', sans-serif;
+
+    /* 阴影 */
+    --shadow-glow:    0 0 30px rgba(0, 212, 255, 0.15);
+    --shadow-card:    0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: var(--font-jp);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-feature-settings: "palt";
+    letter-spacing: 0.02em;
+}
+
+/* ========== 背景氛围层 ========== */
+.bg-ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.18;
+    animation: orbFloat 14s ease-in-out infinite alternate;
+}
+.bg-orb-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #5b4fcf, transparent 70%);
+    top: -150px; left: -100px;
+}
+.bg-orb-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #00d4ff, transparent 70%);
+    bottom: -100px; right: -80px;
+    animation-delay: -5s;
+}
+.bg-orb-3 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #ff4d6d, transparent 70%);
+    top: 45%; left: 50%; transform: translate(-50%, -50%);
+    animation-delay: -9s;
+    opacity: 0.1;
+}
+@keyframes orbFloat {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(40px, -30px) scale(1.1); }
+    100% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+.bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* ========== 通用组件 ========== */
+.page-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+}
+
+/* 顶部导航 */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+}
+.topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #5b4fcf, #b794f4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(91, 79, 207, 0.4);
+    transition: transform var(--duration-med) var(--ease-spring);
+}
+.topbar-logo:hover .logo-icon {
+    transform: rotate(-10deg) scale(1.08);
+}
+.logo-text {
+    font-family: var(--font-en);
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #f0f2ff, #b794f4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0;
+}
+.logo-version {
+    font-size: 11px; font-weight: 600;
+    color: var(--neon-purple);
+    background: rgba(183, 148, 244, 0.12);
+    border: 1px solid rgba(183, 148, 244, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-left: 6px;
+}
+
+.nav-btns { display: flex; gap: 8px; }
+.nav-btn {
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: var(--font-jp);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+.nav-btn:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--border-glow);
+    transform: translateY(-1px);
+}
+.nav-btn.active {
+    background: rgba(183, 148, 244, 0.12);
+    color: var(--neon-purple);
+    border-color: rgba(183, 148, 244, 0.4);
+}
+.nav-btn.primary {
+    background: linear-gradient(135deg, #5b4fcf, #7c6fff);
+    border-color: transparent;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(91, 79, 207, 0.3);
+}
+.nav-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(91, 79, 207, 0.5);
+}
+
+/* 卡片 */
+.glass-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all var(--duration-med) var(--ease-smooth);
+}
+.glass-card:hover {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-glow);
+}
+.card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-title {
+    font-family: var(--font-en);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-count-badge {
+    font-size: 11px;
+    background: rgba(6, 214, 160, 0.1);
+    color: var(--neon-green);
+    border: 1px solid rgba(6, 214, 160, 0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.card-body { padding: 16px 20px; }
+
+/* 通用动画 */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(183, 148, 244, 0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(183, 148, 244, 0); }
+}
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(183, 148, 244, 0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(183, 148, 244, 0.4); }
+
+/* 选择文本颜色 */
+::selection { background: rgba(183, 148, 244, 0.3); color: white; }
+
+/* 响应式断点 */
+@media (max-width: 900px) {
+    .topbar {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+    }
+    .nav-btns { flex-wrap: wrap; }
+}
