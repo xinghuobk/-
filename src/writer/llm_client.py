@@ -304,7 +304,12 @@ class LLMClient:
             )
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["choices"][0]["message"]["content"]
+                # --- 修复：防止 choices 为空或格式异常 ---
+                choices = data.get("choices", [])
+                if choices and isinstance(choices[0], dict):
+                    msg = choices[0].get("message", {})
+                    return msg.get("content", "")
+                return "[openai API 返回格式异常：无 choices]"
         except Exception as exc:
             return f"[openai call failed: {exc}]"
 
@@ -378,7 +383,12 @@ class LLMClient:
             )
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["choices"][0]["message"]["content"]
+                # --- 修复：防止 choices 为空或格式异常 ---
+                choices = data.get("choices", [])
+                if choices and isinstance(choices[0], dict):
+                    msg = choices[0].get("message", {})
+                    return msg.get("content", "")
+                return "[ollama API 返回格式异常：无 choices]"
         except urllib.error.URLError as exc:
             # 本地 Ollama 未启动 → 降级 mock
             if "Connection refused" in str(exc) or "Errno 111" in str(exc) or "Errno 61" in str(exc):
