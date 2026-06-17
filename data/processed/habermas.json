@@ -1,0 +1,307 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "habermas",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 20,
+  "schema": [
+    "question_id",
+    "question",
+    "opinions"
+  ],
+  "samples": [
+    {
+      "question_id": "hab-000",
+      "question": "sample ethics/policy question 0",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7"
+      ]
+    },
+    {
+      "question_id": "hab-001",
+      "question": "sample ethics/policy question 1",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6"
+      ]
+    },
+    {
+      "question_id": "hab-002",
+      "question": "sample ethics/policy question 2",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7"
+      ]
+    },
+    {
+      "question_id": "hab-003",
+      "question": "sample ethics/policy question 3",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7"
+      ]
+    },
+    {
+      "question_id": "hab-004",
+      "question": "sample ethics/policy question 4",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8"
+      ]
+    },
+    {
+      "question_id": "hab-005",
+      "question": "sample ethics/policy question 5",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9",
+        "opinion text 10"
+      ]
+    },
+    {
+      "question_id": "hab-006",
+      "question": "sample ethics/policy question 6",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9",
+        "opinion text 10",
+        "opinion text 11"
+      ]
+    },
+    {
+      "question_id": "hab-007",
+      "question": "sample ethics/policy question 7",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9"
+      ]
+    },
+    {
+      "question_id": "hab-008",
+      "question": "sample ethics/policy question 8",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9"
+      ]
+    },
+    {
+      "question_id": "hab-009",
+      "question": "sample ethics/policy question 9",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9",
+        "opinion text 10"
+      ]
+    },
+    {
+      "question_id": "hab-010",
+      "question": "sample ethics/policy question 10",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8"
+      ]
+    },
+    {
+      "question_id": "hab-011",
+      "question": "sample ethics/policy question 11",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9",
+        "opinion text 10"
+      ]
+    },
+    {
+      "question_id": "hab-012",
+      "question": "sample ethics/policy question 12",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4"
+      ]
+    },
+    {
+      "question_id": "hab-013",
+      "question": "sample ethics/policy question 13",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5"
+      ]
+    },
+    {
+      "question_id": "hab-014",
+      "question": "sample ethics/policy question 14",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4"
+      ]
+    },
+    {
+      "question_id": "hab-015",
+      "question": "sample ethics/policy question 15",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8"
+      ]
+    },
+    {
+      "question_id": "hab-016",
+      "question": "sample ethics/policy question 16",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4"
+      ]
+    },
+    {
+      "question_id": "hab-017",
+      "question": "sample ethics/policy question 17",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9",
+        "opinion text 10",
+        "opinion text 11"
+      ]
+    },
+    {
+      "question_id": "hab-018",
+      "question": "sample ethics/policy question 18",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6"
+      ]
+    },
+    {
+      "question_id": "hab-019",
+      "question": "sample ethics/policy question 19",
+      "opinions": [
+        "opinion text 0",
+        "opinion text 1",
+        "opinion text 2",
+        "opinion text 3",
+        "opinion text 4",
+        "opinion text 5",
+        "opinion text 6",
+        "opinion text 7",
+        "opinion text 8",
+        "opinion text 9"
+      ]
+    }
+  ]
+}

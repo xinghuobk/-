@@ -1,0 +1,315 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "arg_quality_rankeval",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 50,
+  "schema": [
+    "argument_id",
+    "topic",
+    "argument",
+    "quality_score"
+  ],
+  "samples": [
+    {
+      "argument_id": "aqa-0000",
+      "topic": "sample topic 0",
+      "argument": "sample argument text for topic 0, sentence 0",
+      "quality_score": 0.712
+    },
+    {
+      "argument_id": "aqa-0001",
+      "topic": "sample topic 1",
+      "argument": "sample argument text for topic 1, sentence 1",
+      "quality_score": 0.22
+    },
+    {
+      "argument_id": "aqa-0002",
+      "topic": "sample topic 2",
+      "argument": "sample argument text for topic 2, sentence 2",
+      "quality_score": 0.42
+    },
+    {
+      "argument_id": "aqa-0003",
+      "topic": "sample topic 3",
+      "argument": "sample argument text for topic 3, sentence 3",
+      "quality_score": 0.379
+    },
+    {
+      "argument_id": "aqa-0004",
+      "topic": "sample topic 4",
+      "argument": "sample argument text for topic 4, sentence 4",
+      "quality_score": 0.789
+    },
+    {
+      "argument_id": "aqa-0005",
+      "topic": "sample topic 5",
+      "argument": "sample argument text for topic 5, sentence 5",
+      "quality_score": 0.741
+    },
+    {
+      "argument_id": "aqa-0006",
+      "topic": "sample topic 6",
+      "argument": "sample argument text for topic 6, sentence 6",
+      "quality_score": 0.914
+    },
+    {
+      "argument_id": "aqa-0007",
+      "topic": "sample topic 7",
+      "argument": "sample argument text for topic 7, sentence 7",
+      "quality_score": 0.27
+    },
+    {
+      "argument_id": "aqa-0008",
+      "topic": "sample topic 8",
+      "argument": "sample argument text for topic 8, sentence 8",
+      "quality_score": 0.538
+    },
+    {
+      "argument_id": "aqa-0009",
+      "topic": "sample topic 9",
+      "argument": "sample argument text for topic 9, sentence 9",
+      "quality_score": 0.224
+    },
+    {
+      "argument_id": "aqa-0010",
+      "topic": "sample topic 0",
+      "argument": "sample argument text for topic 0, sentence 10",
+      "quality_score": 0.375
+    },
+    {
+      "argument_id": "aqa-0011",
+      "topic": "sample topic 1",
+      "argument": "sample argument text for topic 1, sentence 11",
+      "quality_score": 0.604
+    },
+    {
+      "argument_id": "aqa-0012",
+      "topic": "sample topic 2",
+      "argument": "sample argument text for topic 2, sentence 12",
+      "quality_score": 0.221
+    },
+    {
+      "argument_id": "aqa-0013",
+      "topic": "sample topic 3",
+      "argument": "sample argument text for topic 3, sentence 13",
+      "quality_score": 0.359
+    },
+    {
+      "argument_id": "aqa-0014",
+      "topic": "sample topic 4",
+      "argument": "sample argument text for topic 4, sentence 14",
+      "quality_score": 0.72
+    },
+    {
+      "argument_id": "aqa-0015",
+      "topic": "sample topic 5",
+      "argument": "sample argument text for topic 5, sentence 15",
+      "quality_score": 0.636
+    },
+    {
+      "argument_id": "aqa-0016",
+      "topic": "sample topic 6",
+      "argument": "sample argument text for topic 6, sentence 16",
+      "quality_score": 0.376
+    },
+    {
+      "argument_id": "aqa-0017",
+      "topic": "sample topic 7",
+      "argument": "sample argument text for topic 7, sentence 17",
+      "quality_score": 0.671
+    },
+    {
+      "argument_id": "aqa-0018",
+      "topic": "sample topic 8",
+      "argument": "sample argument text for topic 8, sentence 18",
+      "quality_score": 0.848
+    },
+    {
+      "argument_id": "aqa-0019",
+      "topic": "sample topic 9",
+      "argument": "sample argument text for topic 9, sentence 19",
+      "quality_score": 0.205
+    },
+    {
+      "argument_id": "aqa-0020",
+      "topic": "sample topic 0",
+      "argument": "sample argument text for topic 0, sentence 20",
+      "quality_score": 0.845
+    },
+    {
+      "argument_id": "aqa-0021",
+      "topic": "sample topic 1",
+      "argument": "sample argument text for topic 1, sentence 21",
+      "quality_score": 0.759
+    },
+    {
+      "argument_id": "aqa-0022",
+      "topic": "sample topic 2",
+      "argument": "sample argument text for topic 2, sentence 22",
+      "quality_score": 0.472
+    },
+    {
+      "argument_id": "aqa-0023",
+      "topic": "sample topic 3",
+      "argument": "sample argument text for topic 3, sentence 23",
+      "quality_score": 0.324
+    },
+    {
+      "argument_id": "aqa-0024",
+      "topic": "sample topic 4",
+      "argument": "sample argument text for topic 4, sentence 24",
+      "quality_score": 0.966
+    },
+    {
+      "argument_id": "aqa-0025",
+      "topic": "sample topic 5",
+      "argument": "sample argument text for topic 5, sentence 25",
+      "quality_score": 0.469
+    },
+    {
+      "argument_id": "aqa-0026",
+      "topic": "sample topic 6",
+      "argument": "sample argument text for topic 6, sentence 26",
+      "quality_score": 0.274
+    },
+    {
+      "argument_id": "aqa-0027",
+      "topic": "sample topic 7",
+      "argument": "sample argument text for topic 7, sentence 27",
+      "quality_score": 0.277
+    },
+    {
+      "argument_id": "aqa-0028",
+      "topic": "sample topic 8",
+      "argument": "sample argument text for topic 8, sentence 28",
+      "quality_score": 0.878
+    },
+    {
+      "argument_id": "aqa-0029",
+      "topic": "sample topic 9",
+      "argument": "sample argument text for topic 9, sentence 29",
+      "quality_score": 0.683
+    },
+    {
+      "argument_id": "aqa-0030",
+      "topic": "sample topic 0",
+      "argument": "sample argument text for topic 0, sentence 30",
+      "quality_score": 0.846
+    },
+    {
+      "argument_id": "aqa-0031",
+      "topic": "sample topic 1",
+      "argument": "sample argument text for topic 1, sentence 31",
+      "quality_score": 0.784
+    },
+    {
+      "argument_id": "aqa-0032",
+      "topic": "sample topic 2",
+      "argument": "sample argument text for topic 2, sentence 32",
+      "quality_score": 0.629
+    },
+    {
+      "argument_id": "aqa-0033",
+      "topic": "sample topic 3",
+      "argument": "sample argument text for topic 3, sentence 33",
+      "quality_score": 0.978
+    },
+    {
+      "argument_id": "aqa-0034",
+      "topic": "sample topic 4",
+      "argument": "sample argument text for topic 4, sentence 34",
+      "quality_score": 0.503
+    },
+    {
+      "argument_id": "aqa-0035",
+      "topic": "sample topic 5",
+      "argument": "sample argument text for topic 5, sentence 35",
+      "quality_score": 0.642
+    },
+    {
+      "argument_id": "aqa-0036",
+      "topic": "sample topic 6",
+      "argument": "sample argument text for topic 6, sentence 36",
+      "quality_score": 0.864
+    },
+    {
+      "argument_id": "aqa-0037",
+      "topic": "sample topic 7",
+      "argument": "sample argument text for topic 7, sentence 37",
+      "quality_score": 0.695
+    },
+    {
+      "argument_id": "aqa-0038",
+      "topic": "sample topic 8",
+      "argument": "sample argument text for topic 8, sentence 38",
+      "quality_score": 0.889
+    },
+    {
+      "argument_id": "aqa-0039",
+      "topic": "sample topic 9",
+      "argument": "sample argument text for topic 9, sentence 39",
+      "quality_score": 0.662
+    },
+    {
+      "argument_id": "aqa-0040",
+      "topic": "sample topic 0",
+      "argument": "sample argument text for topic 0, sentence 40",
+      "quality_score": 0.764
+    },
+    {
+      "argument_id": "aqa-0041",
+      "topic": "sample topic 1",
+      "argument": "sample argument text for topic 1, sentence 41",
+      "quality_score": 0.237
+    },
+    {
+      "argument_id": "aqa-0042",
+      "topic": "sample topic 2",
+      "argument": "sample argument text for topic 2, sentence 42",
+      "quality_score": 0.382
+    },
+    {
+      "argument_id": "aqa-0043",
+      "topic": "sample topic 3",
+      "argument": "sample argument text for topic 3, sentence 43",
+      "quality_score": 0.432
+    },
+    {
+      "argument_id": "aqa-0044",
+      "topic": "sample topic 4",
+      "argument": "sample argument text for topic 4, sentence 44",
+      "quality_score": 0.264
+    },
+    {
+      "argument_id": "aqa-0045",
+      "topic": "sample topic 5",
+      "argument": "sample argument text for topic 5, sentence 45",
+      "quality_score": 0.386
+    },
+    {
+      "argument_id": "aqa-0046",
+      "topic": "sample topic 6",
+      "argument": "sample argument text for topic 6, sentence 46",
+      "quality_score": 0.281
+    },
+    {
+      "argument_id": "aqa-0047",
+      "topic": "sample topic 7",
+      "argument": "sample argument text for topic 7, sentence 47",
+      "quality_score": 0.422
+    },
+    {
+      "argument_id": "aqa-0048",
+      "topic": "sample topic 8",
+      "argument": "sample argument text for topic 8, sentence 48",
+      "quality_score": 0.709
+    },
+    {
+      "argument_id": "aqa-0049",
+      "topic": "sample topic 9",
+      "argument": "sample argument text for topic 9, sentence 49",
+      "quality_score": 0.492
+    }
+  ]
+}

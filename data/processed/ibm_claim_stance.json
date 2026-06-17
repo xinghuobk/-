@@ -1,0 +1,330 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "ibm_claim_stance",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 50,
+  "schema": [
+    "claim_id",
+    "claim",
+    "domain",
+    "stance"
+  ],
+  "domains": [
+    "Politics",
+    "Economy",
+    "Education",
+    "Health",
+    "Environment",
+    "Technology",
+    "Ethics",
+    "Law",
+    "Sports",
+    "Culture",
+    "Religion",
+    "Science",
+    "Society"
+  ],
+  "samples": [
+    {
+      "claim_id": "ibm-stance-0000",
+      "claim": "sample claim 0",
+      "domain": "Environment",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0001",
+      "claim": "sample claim 1",
+      "domain": "Law",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0002",
+      "claim": "sample claim 2",
+      "domain": "Economy",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0003",
+      "claim": "sample claim 3",
+      "domain": "Technology",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0004",
+      "claim": "sample claim 4",
+      "domain": "Economy",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0005",
+      "claim": "sample claim 5",
+      "domain": "Politics",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0006",
+      "claim": "sample claim 6",
+      "domain": "Environment",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0007",
+      "claim": "sample claim 7",
+      "domain": "Environment",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0008",
+      "claim": "sample claim 8",
+      "domain": "Culture",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0009",
+      "claim": "sample claim 9",
+      "domain": "Education",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0010",
+      "claim": "sample claim 10",
+      "domain": "Society",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0011",
+      "claim": "sample claim 11",
+      "domain": "Health",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0012",
+      "claim": "sample claim 12",
+      "domain": "Economy",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0013",
+      "claim": "sample claim 13",
+      "domain": "Education",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0014",
+      "claim": "sample claim 14",
+      "domain": "Politics",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0015",
+      "claim": "sample claim 15",
+      "domain": "Technology",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0016",
+      "claim": "sample claim 16",
+      "domain": "Technology",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0017",
+      "claim": "sample claim 17",
+      "domain": "Economy",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0018",
+      "claim": "sample claim 18",
+      "domain": "Economy",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0019",
+      "claim": "sample claim 19",
+      "domain": "Society",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0020",
+      "claim": "sample claim 20",
+      "domain": "Technology",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0021",
+      "claim": "sample claim 21",
+      "domain": "Science",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0022",
+      "claim": "sample claim 22",
+      "domain": "Culture",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0023",
+      "claim": "sample claim 23",
+      "domain": "Law",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0024",
+      "claim": "sample claim 24",
+      "domain": "Health",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0025",
+      "claim": "sample claim 25",
+      "domain": "Education",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0026",
+      "claim": "sample claim 26",
+      "domain": "Health",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0027",
+      "claim": "sample claim 27",
+      "domain": "Science",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0028",
+      "claim": "sample claim 28",
+      "domain": "Environment",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0029",
+      "claim": "sample claim 29",
+      "domain": "Ethics",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0030",
+      "claim": "sample claim 30",
+      "domain": "Ethics",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0031",
+      "claim": "sample claim 31",
+      "domain": "Culture",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0032",
+      "claim": "sample claim 32",
+      "domain": "Sports",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0033",
+      "claim": "sample claim 33",
+      "domain": "Sports",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0034",
+      "claim": "sample claim 34",
+      "domain": "Politics",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0035",
+      "claim": "sample claim 35",
+      "domain": "Culture",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0036",
+      "claim": "sample claim 36",
+      "domain": "Technology",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0037",
+      "claim": "sample claim 37",
+      "domain": "Education",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0038",
+      "claim": "sample claim 38",
+      "domain": "Politics",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0039",
+      "claim": "sample claim 39",
+      "domain": "Politics",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0040",
+      "claim": "sample claim 40",
+      "domain": "Economy",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0041",
+      "claim": "sample claim 41",
+      "domain": "Culture",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0042",
+      "claim": "sample claim 42",
+      "domain": "Culture",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0043",
+      "claim": "sample claim 43",
+      "domain": "Law",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0044",
+      "claim": "sample claim 44",
+      "domain": "Health",
+      "stance": "CON"
+    },
+    {
+      "claim_id": "ibm-stance-0045",
+      "claim": "sample claim 45",
+      "domain": "Environment",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0046",
+      "claim": "sample claim 46",
+      "domain": "Religion",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0047",
+      "claim": "sample claim 47",
+      "domain": "Law",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0048",
+      "claim": "sample claim 48",
+      "domain": "Education",
+      "stance": "PRO"
+    },
+    {
+      "claim_id": "ibm-stance-0049",
+      "claim": "sample claim 49",
+      "domain": "Culture",
+      "stance": "CON"
+    }
+  ]
+}

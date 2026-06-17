@@ -1,0 +1,359 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "perspectrum",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 20,
+  "schema": [
+    "claim_id",
+    "claim",
+    "stances"
+  ],
+  "samples": [
+    {
+      "claim_id": "persp-000",
+      "claim": "sample claim 0",
+      "stances": [
+        "stance-00-0",
+        "stance-00-1",
+        "stance-00-2",
+        "stance-00-3",
+        "stance-00-4",
+        "stance-00-5",
+        "stance-00-6",
+        "stance-00-7",
+        "stance-00-8",
+        "stance-00-9",
+        "stance-00-10",
+        "stance-00-11",
+        "stance-00-12",
+        "stance-00-13"
+      ]
+    },
+    {
+      "claim_id": "persp-001",
+      "claim": "sample claim 1",
+      "stances": [
+        "stance-01-0",
+        "stance-01-1",
+        "stance-01-2",
+        "stance-01-3",
+        "stance-01-4",
+        "stance-01-5",
+        "stance-01-6",
+        "stance-01-7",
+        "stance-01-8"
+      ]
+    },
+    {
+      "claim_id": "persp-002",
+      "claim": "sample claim 2",
+      "stances": [
+        "stance-02-0",
+        "stance-02-1",
+        "stance-02-2",
+        "stance-02-3",
+        "stance-02-4",
+        "stance-02-5",
+        "stance-02-6",
+        "stance-02-7",
+        "stance-02-8",
+        "stance-02-9"
+      ]
+    },
+    {
+      "claim_id": "persp-003",
+      "claim": "sample claim 3",
+      "stances": [
+        "stance-03-0",
+        "stance-03-1",
+        "stance-03-2",
+        "stance-03-3",
+        "stance-03-4",
+        "stance-03-5",
+        "stance-03-6",
+        "stance-03-7",
+        "stance-03-8",
+        "stance-03-9",
+        "stance-03-10",
+        "stance-03-11",
+        "stance-03-12",
+        "stance-03-13"
+      ]
+    },
+    {
+      "claim_id": "persp-004",
+      "claim": "sample claim 4",
+      "stances": [
+        "stance-04-0",
+        "stance-04-1",
+        "stance-04-2",
+        "stance-04-3",
+        "stance-04-4",
+        "stance-04-5",
+        "stance-04-6",
+        "stance-04-7",
+        "stance-04-8",
+        "stance-04-9",
+        "stance-04-10"
+      ]
+    },
+    {
+      "claim_id": "persp-005",
+      "claim": "sample claim 5",
+      "stances": [
+        "stance-05-0",
+        "stance-05-1",
+        "stance-05-2",
+        "stance-05-3",
+        "stance-05-4",
+        "stance-05-5",
+        "stance-05-6",
+        "stance-05-7",
+        "stance-05-8",
+        "stance-05-9",
+        "stance-05-10",
+        "stance-05-11"
+      ]
+    },
+    {
+      "claim_id": "persp-006",
+      "claim": "sample claim 6",
+      "stances": [
+        "stance-06-0",
+        "stance-06-1",
+        "stance-06-2",
+        "stance-06-3",
+        "stance-06-4",
+        "stance-06-5",
+        "stance-06-6",
+        "stance-06-7"
+      ]
+    },
+    {
+      "claim_id": "persp-007",
+      "claim": "sample claim 7",
+      "stances": [
+        "stance-07-0",
+        "stance-07-1",
+        "stance-07-2",
+        "stance-07-3",
+        "stance-07-4",
+        "stance-07-5",
+        "stance-07-6",
+        "stance-07-7",
+        "stance-07-8",
+        "stance-07-9",
+        "stance-07-10"
+      ]
+    },
+    {
+      "claim_id": "persp-008",
+      "claim": "sample claim 8",
+      "stances": [
+        "stance-08-0",
+        "stance-08-1",
+        "stance-08-2",
+        "stance-08-3",
+        "stance-08-4",
+        "stance-08-5",
+        "stance-08-6",
+        "stance-08-7",
+        "stance-08-8"
+      ]
+    },
+    {
+      "claim_id": "persp-009",
+      "claim": "sample claim 9",
+      "stances": [
+        "stance-09-0",
+        "stance-09-1",
+        "stance-09-2",
+        "stance-09-3",
+        "stance-09-4",
+        "stance-09-5",
+        "stance-09-6",
+        "stance-09-7"
+      ]
+    },
+    {
+      "claim_id": "persp-010",
+      "claim": "sample claim 10",
+      "stances": [
+        "stance-10-0",
+        "stance-10-1",
+        "stance-10-2",
+        "stance-10-3",
+        "stance-10-4",
+        "stance-10-5",
+        "stance-10-6",
+        "stance-10-7",
+        "stance-10-8"
+      ]
+    },
+    {
+      "claim_id": "persp-011",
+      "claim": "sample claim 11",
+      "stances": [
+        "stance-11-0",
+        "stance-11-1",
+        "stance-11-2",
+        "stance-11-3",
+        "stance-11-4",
+        "stance-11-5",
+        "stance-11-6",
+        "stance-11-7",
+        "stance-11-8",
+        "stance-11-9"
+      ]
+    },
+    {
+      "claim_id": "persp-012",
+      "claim": "sample claim 12",
+      "stances": [
+        "stance-12-0",
+        "stance-12-1",
+        "stance-12-2",
+        "stance-12-3",
+        "stance-12-4",
+        "stance-12-5",
+        "stance-12-6",
+        "stance-12-7",
+        "stance-12-8",
+        "stance-12-9",
+        "stance-12-10",
+        "stance-12-11"
+      ]
+    },
+    {
+      "claim_id": "persp-013",
+      "claim": "sample claim 13",
+      "stances": [
+        "stance-13-0",
+        "stance-13-1",
+        "stance-13-2",
+        "stance-13-3",
+        "stance-13-4",
+        "stance-13-5",
+        "stance-13-6",
+        "stance-13-7",
+        "stance-13-8",
+        "stance-13-9",
+        "stance-13-10",
+        "stance-13-11",
+        "stance-13-12",
+        "stance-13-13"
+      ]
+    },
+    {
+      "claim_id": "persp-014",
+      "claim": "sample claim 14",
+      "stances": [
+        "stance-14-0",
+        "stance-14-1",
+        "stance-14-2",
+        "stance-14-3",
+        "stance-14-4",
+        "stance-14-5",
+        "stance-14-6",
+        "stance-14-7",
+        "stance-14-8",
+        "stance-14-9",
+        "stance-14-10",
+        "stance-14-11",
+        "stance-14-12",
+        "stance-14-13"
+      ]
+    },
+    {
+      "claim_id": "persp-015",
+      "claim": "sample claim 15",
+      "stances": [
+        "stance-15-0",
+        "stance-15-1",
+        "stance-15-2",
+        "stance-15-3",
+        "stance-15-4",
+        "stance-15-5",
+        "stance-15-6",
+        "stance-15-7",
+        "stance-15-8",
+        "stance-15-9",
+        "stance-15-10",
+        "stance-15-11",
+        "stance-15-12"
+      ]
+    },
+    {
+      "claim_id": "persp-016",
+      "claim": "sample claim 16",
+      "stances": [
+        "stance-16-0",
+        "stance-16-1",
+        "stance-16-2",
+        "stance-16-3",
+        "stance-16-4",
+        "stance-16-5",
+        "stance-16-6",
+        "stance-16-7",
+        "stance-16-8",
+        "stance-16-9",
+        "stance-16-10",
+        "stance-16-11",
+        "stance-16-12"
+      ]
+    },
+    {
+      "claim_id": "persp-017",
+      "claim": "sample claim 17",
+      "stances": [
+        "stance-17-0",
+        "stance-17-1",
+        "stance-17-2",
+        "stance-17-3",
+        "stance-17-4",
+        "stance-17-5",
+        "stance-17-6",
+        "stance-17-7",
+        "stance-17-8"
+      ]
+    },
+    {
+      "claim_id": "persp-018",
+      "claim": "sample claim 18",
+      "stances": [
+        "stance-18-0",
+        "stance-18-1",
+        "stance-18-2",
+        "stance-18-3",
+        "stance-18-4",
+        "stance-18-5",
+        "stance-18-6",
+        "stance-18-7",
+        "stance-18-8",
+        "stance-18-9",
+        "stance-18-10",
+        "stance-18-11",
+        "stance-18-12"
+      ]
+    },
+    {
+      "claim_id": "persp-019",
+      "claim": "sample claim 19",
+      "stances": [
+        "stance-19-0",
+        "stance-19-1",
+        "stance-19-2",
+        "stance-19-3",
+        "stance-19-4",
+        "stance-19-5",
+        "stance-19-6",
+        "stance-19-7",
+        "stance-19-8",
+        "stance-19-9",
+        "stance-19-10",
+        "stance-19-11"
+      ]
+    }
+  ]
+}
