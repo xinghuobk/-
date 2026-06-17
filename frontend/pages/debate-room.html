@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParaJudge - 辩论会议室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   ParaJudge Frontend - 动画风格辩论会议室
+   风格：Soft Neon × Anime Conference（柔和霓虹 × 动漫会议室）
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* 主色调 */
+  --bg-deep:        #08091a;
+  --bg-panel:       #0f1228;
+  --bg-card:        #161936;
+  --bg-card-hover:  #1e2244;
+  --border:         rgba(255,255,255,0.07);
+  --border-glow:    rgba(124,111,255,0.35);
+
+  /* 霓虹调色板 */
+  --neon-pro:       #00d4ff;      /* 正方：天蓝 */
+  --neon-pro-glow:  rgba(0,212,255,0.25);
+  --neon-con:       #ff4d6d;      /* 反方：玫瑰红 */
+  --neon-con-glow:  rgba(255,77,109,0.25);
+  --neon-gold:      #ffd166;      /* 法官/裁决 */
+  --neon-gold-glow: rgba(255,209,102,0.25);
+  --neon-purple:    #a78bfa;      /* 主持人/中性 */
+  --neon-green:     #06d6a0;      /* 证据/成功 */
+  --neon-orange:    #ff9f1c;      /* 警告/问题 */
+
+  /* 文字 */
+  --text-primary:   #eef0ff;
+  --text-secondary: #8b92b8;
+  --text-muted:     #4d5580;
+
+  /* 动画 */
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:     cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   200ms;
+  --duration-med:    400ms;
+  --duration-slow:   700ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ─── 背景氛围层 ─────────────────────────────────────────────── */
+.bg-ambient {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.bg-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
+  animation: orbDrift 12s ease-in-out infinite alternate;
+}
+.bg-orb-1 { width: 500px; height: 500px; background: #5b4fcf; top: -100px; left: -100px; animation-delay: 0s; }
+.bg-orb-2 { width: 400px; height: 400px; background: #00d4ff; bottom: -80px; right: -80px; animation-delay: -4s; }
+.bg-orb-3 { width: 300px; height: 300px; background: #ff4d6d; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -8s; }
+
+@keyframes orbDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(40px, -30px) scale(1.08); }
+  100% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+/* 网格背景 */
+.bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridPulse 8s ease-in-out infinite;
+}
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.7; }
+}
+
+/* ─── 主布局 ─────────────────────────────────────────────────── */
+.app-container {
+  position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+/* ─── 顶部导航 ─────────────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #5b4fcf, #a78bfa);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 20px rgba(91,79,207,0.4);
+}
+.logo-text {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(90deg, #eef0ff, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.logo-version {
+  font-size: 11px; font-weight: 600; color: var(--neon-purple);
+  background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3);
+  padding: 2px 8px; border-radius: 20px; margin-left: 6px;
+  -webkit-text-fill-color: var(--neon-purple);
+}
+.topbar-nav { display: flex; gap: 8px; }
+.nav-btn {
+  padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-secondary);
+  font-size: 13px; font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer; transition: all var(--duration-fast) var(--ease-smooth);
+}
+.nav-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-glow); }
+.nav-btn.active {
+  background: rgba(167,139,250,0.12); color: var(--neon-purple);
+  border-color: rgba(167,139,250,0.4);
+}
+.nav-btn.start-btn {
+  background: linear-gradient(135deg, #5b4fcf, #7c6fff);
+  border-color: transparent; color: white; font-weight: 600;
+}
+.nav-btn.start-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(91,79,207,0.5); }
+
+/* ─── 辩论问题横幅 ─────────────────────────────────────────── */
+.problem-banner {
+  background: linear-gradient(135deg, var(--bg-panel), var(--bg-card));
+  border: 1px solid var(--border-glow);
+  border-radius: 20px; padding: 24px 32px;
+  margin-bottom: 28px;
+  position: relative; overflow: hidden;
+  animation: slideDown 0.6s var(--ease-spring) both;
+}
+.problem-banner::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--neon-pro), var(--neon-purple), var(--neon-con));
+}
+.problem-label {
+  font-size: 11px; font-weight: 600; color: var(--neon-purple);
+  text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;
+}
+.problem-text {
+  font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600;
+  color: var(--text-primary); line-height: 1.4;
+}
+.problem-meta {
+  display: flex; gap: 16px; margin-top: 12px;
+}
+.meta-tag {
+  font-size: 12px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 5px;
+}
+.meta-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon-gold);
+}
+
+/* ─── 阶段进度指示器 ─────────────────────────────────────────── */
+.phase-indicator {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 28px;
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 24px;
+  animation: slideDown 0.6s var(--ease-spring) 0.1s both;
+}
+.phase-step {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; position: relative;
+}
+.phase-step::after {
+  content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 1px; background: var(--border);
+}
+.phase-step:last-child::after { display: none; }
+.phase-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  transition: all var(--duration-med) var(--ease-spring);
+  border: 2px solid var(--border);
+  background: var(--bg-card); color: var(--text-muted);
+}
+.phase-step.active .phase-icon {
+  border-color: var(--neon-purple); color: var(--neon-purple);
+  background: rgba(167,139,250,0.12);
+  box-shadow: 0 0 16px rgba(167,139,250,0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+.phase-step.done .phase-icon {
+  border-color: var(--neon-green); color: var(--neon-green);
+  background: rgba(6,214,160,0.1);
+}
+.phase-step.active .phase-icon { animation: phasePulse 2s ease-in-out infinite; }
+@keyframes phasePulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(167,139,250,0.3); }
+  50%       { box-shadow: 0 0 28px rgba(167,139,250,0.6); }
+}
+.phase-name { font-size: 12px; color: var(--text-muted); }
+.phase-step.active .phase-name { color: var(--neon-purple); font-weight: 600; }
+.phase-step.done .phase-name  { color: var(--neon-green); }
+
+/* ─── 主要区域：三栏布局 ─────────────────────────────────────── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  animation: fadeIn 0.6s var(--ease-smooth) 0.2s both;
+}
+
+/* 辩论主舞台 */
+.debate-stage {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+
+/* 舞台头部 */
+.stage-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.stage-title {
+  font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.round-badge {
+  background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.3);
+  color: var(--neon-gold); font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px;
+}
+
+/* 辩手区域 */
+.speakers-area {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+}
+.speaker-panel {
+  background: var(--bg-panel); padding: 24px 20px;
+  position: relative; transition: background var(--duration-fast);
+}
+.speaker-panel:hover { background: var(--bg-card); }
+.speaker-panel.active { background: var(--bg-card-hover); }
+.speaker-panel.speaking {
+  animation: speakerGlow 2s ease-in-out infinite;
+}
+@keyframes speakerGlow {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(0,212,255,0); }
+  50%       { box-shadow: inset 0 0 60px rgba(0,212,255,0.05); }
+}
+.speaker-panel.speaking.con {
+  animation: speakerGlowCon 2s ease-in-out infinite;
+}
+@keyframes speakerGlowCon {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(255,77,109,0); }
+  50%       { box-shadow: inset 0 0 60px rgba(255,77,109,0.05); }
+}
+
+/* 辩手头像 */
+.speaker-avatar-wrap {
+  display: flex; flex-direction: column; align-items: center; margin-bottom: 14px;
+}
+.speaker-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; position: relative;
+  transition: transform var(--duration-med) var(--ease-spring);
+}
+.speaker-panel.speaking .speaker-avatar { transform: scale(1.08); }
+.avatar-pro {
+  background: linear-gradient(135deg, #0077b6, #00d4ff);
+  box-shadow: 0 0 24px var(--neon-pro-glow), 0 4px 16px rgba(0,0,0,0.3);
+}
+.avatar-con {
+  background: linear-gradient(135deg, #c9184a, #ff4d6d);
+  box-shadow: 0 0 24px var(--neon-con-glow), 0 4px 16px rgba(0,0,0,0.3);
+}
+.avatar-glow-ring {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all var(--duration-med);
+}
+.speaker-panel.speaking .avatar-glow-ring {
+  border-color: rgba(255,255,255,0.3);
+  animation: ringRotate 3s linear infinite;
+}
+@keyframes ringRotate {
+  from { transform: rotate(0deg); border-color: rgba(255,255,255,0.3) transparent transparent transparent; }
+  to   { transform: rotate(360deg); }
+}
+.avatar-status {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+  margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;
+}
+.avatar-status.speaking { background: rgba(0,212,255,0.15); color: var(--neon-pro); }
+.avatar-status.waiting  { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+/* 辩手信息 */
+.speaker-name {
+  font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700;
+  margin-bottom: 2px;
+}
+.speaker-name.pro { color: var(--neon-pro); }
+.speaker-name.con { color: var(--neon-con); }
+.speaker-role { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+.speaker-stance {
+  font-size: 12px; color: var(--text-secondary);
+  padding: 6px 10px; background: rgba(255,255,255,0.03);
+  border-radius: 8px; border: 1px solid var(--border);
+  margin-bottom: 12px; line-height: 1.4;
+}
+
+/* 发言气泡 */
+.argument-bubble {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  font-size: 13px; line-height: 1.5; color: var(--text-primary);
+  opacity: 0; transform: translateY(8px);
+  transition: all var(--duration-med) var(--ease-spring);
+  position: relative;
+}
+.argument-bubble.visible { opacity: 1; transform: translateY(0); }
+.argument-bubble.pro { border-left: 3px solid var(--neon-pro); }
+.argument-bubble.con { border-left: 3px solid var(--neon-con); }
+.argument-id {
+  font-size: 10px; color: var(--text-muted); margin-bottom: 4px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.argument-text { color: var(--text-primary); }
+.argument-refs {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+}
+.ref-tag {
+  font-size: 10px; padding: 2px 7px; border-radius: 20px;
+  background: rgba(6,214,160,0.1); color: var(--neon-green);
+  border: 1px solid rgba(6,214,160,0.2);
+}
+
+/* 主持人小标签 */
+.moderator-badge {
+  position: absolute; top: 12px; right: 14px;
+  background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3);
+  color: var(--neon-purple); font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px;
+  display: flex; align-items: center; gap: 4px;
+}
+.mod-avatar {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c6fff, #a78bfa);
+  display: flex; align-items: center; justify-content: center; font-size: 10px;
+}
+
+/* ─── 辩论记录时间线 ─────────────────────────────────────────── */
+.transcript-area {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+}
+.transcript-title {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+.transcript-scroll {
+  max-height: 240px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(167,139,250,0.3) transparent;
+}
+.transcript-scroll::-webkit-scrollbar { width: 4px; }
+.transcript-scroll::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 2px; }
+.transcript-item {
+  display: flex; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  animation: slideIn 0.3s var(--ease-smooth) both;
+}
+.transcript-side {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  flex-shrink: 0; height: fit-content;
+}
+.transcript-side.pro { background: rgba(0,212,255,0.12); color: var(--neon-pro); }
+.transcript-side.con { background: rgba(255,77,109,0.12); color: var(--neon-con); }
+.transcript-content { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+/* ─── 证据面板（右侧栏）────────────────────────────────────────── */
+.sidebar {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.side-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 7px;
+}
+.panel-count {
+  font-size: 11px; background: rgba(6,214,160,0.1); color: var(--neon-green);
+  border: 1px solid rgba(6,214,160,0.2); padding: 2px 8px; border-radius: 20px;
+}
+.panel-body { padding: 14px; }
+
+/* 证据卡片 */
+.evidence-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+  cursor: pointer; transition: all var(--duration-fast);
+  position: relative; overflow: hidden;
+}
+.evidence-card:hover {
+  border-color: rgba(6,214,160,0.3);
+  transform: translateX(2px);
+}
+.evidence-card.highlight {
+  border-color: rgba(6,214,160,0.5);
+  background: rgba(6,214,160,0.04);
+}
+.evidence-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--neon-green); opacity: 0; transition: opacity var(--duration-fast);
+}
+.evidence-card:hover::before, .evidence-card.highlight::before { opacity: 1; }
+.ev-id {
+  font-size: 9px; font-weight: 700; color: var(--neon-green);
+  letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.ev-title {
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+  line-height: 1.4; margin-bottom: 5px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ev-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.ev-relevance {
+  display: flex; align-items: center; gap: 6px;
+}
+.relevance-bar-bg {
+  flex: 1; height: 4px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; overflow: hidden;
+}
+.relevance-bar {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--neon-green), var(--neon-pro));
+  transition: width 0.8s var(--ease-spring);
+}
+.relevance-val { font-size: 10px; color: var(--neon-green); font-weight: 600; min-width: 28px; }
+
+/* 法官评分卡 */
+.judge-cards { display: flex; flex-direction: column; gap: 8px; }
+.judge-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  transition: all var(--duration-fast);
+}
+.judge-card:hover { border-color: rgba(255,209,102,0.3); }
+.judge-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.judge-info { display: flex; align-items: center; gap: 8px; }
+.judge-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.judge-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.judge-type { font-size: 10px; color: var(--text-muted); }
+.judge-score-display {
+  font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700;
+}
+.score-pro { color: var(--neon-pro); }
+.score-con { color: var(--neon-con); }
+.score-vs { color: var(--text-muted); font-size: 10px; margin: 0 3px; font-weight: 400; }
+.judge-bar-row { display: flex; align-items: center; gap: 6px; }
+.judge-bar-label { font-size: 9px; color: var(--text-muted); width: 14px; text-align: right; }
+.judge-score-bar-bg {
+  flex: 1; height: 5px; background: rgba(255,255,255,0.06);
+  border-radius: 3px; overflow: hidden; position: relative;
+}
+.judge-score-bar-pro {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--neon-pro); border-radius: 3px;
+  transition: width 0.8s var(--ease-spring);
+}
+.judge-score-bar-con {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  background: var(--neon-con); border-radius: 3px;
+  transition: width 0.8s var(--ease-spring);
+}
+
+/* 裁决结果卡 */
+.verdict-card {
+  background: linear-gradient(135deg, rgba(91,79,207,0.15), rgba(167,139,250,0.08));
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 16px; padding: 20px;
+  text-align: center;
+}
+.verdict-winner {
+  font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.verdict-winner.pro { color: var(--neon-pro); }
+.verdict-winner.con { color: var(--neon-con); }
+.verdict-winner.tie { color: var(--neon-gold); }
+.verdict-label { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+.verdict-scores {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  margin-bottom: 16px;
+}
+.score-block { text-align: center; }
+.score-num {
+  font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 700;
+}
+.score-block.pro .score-num { color: var(--neon-pro); }
+.score-block.con .score-num { color: var(--neon-con); }
+.score-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.score-divider { font-size: 22px; color: var(--text-muted); font-weight: 300; }
+.verdict-btn {
+  width: 100%; padding: 10px; border-radius: 10px;
+  background: linear-gradient(135deg, #5b4fcf, #7c6fff);
+  border: none; color: white; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+  transition: all var(--duration-fast);
+}
+.verdict-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(91,79,207,0.4); }
+
+/* ─── 审理问题面板 ─────────────────────────────────────────── */
+.issue-item {
+  display: flex; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.issue-severity {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+  flex-shrink: 0; height: fit-content;
+}
+.issue-severity.critical { background: rgba(255,77,109,0.15); color: var(--neon-con); }
+.issue-severity.warning  { background: rgba(255,159,28,0.15); color: var(--neon-orange); }
+.issue-type { font-size: 10px; color: var(--neon-purple); font-weight: 600; margin-bottom: 2px; }
+.issue-desc  { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+
+/* ─── 发起辩论表单 ─────────────────────────────────────────── */
+.input-section {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px;
+  animation: slideDown 0.5s var(--ease-spring) both;
+}
+.input-label {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  margin-bottom: 10px; display: block;
+}
+.input-field {
+  width: 100%; padding: 14px 18px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text-primary);
+  font-size: 15px; font-family: 'Noto Sans SC', sans-serif;
+  outline: none; resize: vertical; min-height: 80px;
+  transition: border-color var(--duration-fast);
+}
+.input-field:focus { border-color: rgba(167,139,250,0.5); }
+.input-field::placeholder { color: var(--text-muted); }
+.params-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;
+}
+.param-field { display: flex; flex-direction: column; gap: 5px; }
+.param-label { font-size: 11px; color: var(--text-muted); }
+.param-select, .param-input {
+  padding: 8px 12px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-primary); font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif; outline: none;
+}
+.submit-btn {
+  width: 100%; margin-top: 18px; padding: 14px;
+  background: linear-gradient(135deg, #5b4fcf, #7c6fff);
+  border: none; border-radius: 12px; color: white;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+  transition: all var(--duration-fast);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(91,79,207,0.5); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ─── 加载动画 ─────────────────────────────────────────────── */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(8,9,26,0.85); backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px;
+}
+.loading-spinner {
+  width: 60px; height: 60px; position: relative;
+}
+.loading-spinner::before, .loading-spinner::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; border: 3px solid transparent;
+}
+.loading-spinner::before {
+  border-top-color: var(--neon-purple);
+  animation: spin 1s linear infinite;
+}
+.loading-spinner::after {
+  border-bottom-color: var(--neon-pro);
+  animation: spin 1.5s linear infinite reverse;
+  inset: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text-secondary); }
+.loading-phase { font-size: 12px; color: var(--neon-purple); font-weight: 600; }
+
+/* ─── 动画关键帧 ─────────────────────────────────────────── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(167,139,250,0); }
+}
+
+/* ─── 滚动条 ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 3px; }
+
+/* ─── 响应式 ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .speakers-area { grid-template-columns: 1fr; }
+  .sidebar { order: -1; }
+  .params-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- 背景氛围层 -->
+<div class="bg-ambient">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div class="app-container">
+
+  <!-- 导航栏 -->
+  <nav class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-icon">⚖</div>
+      <span class="logo-text">ParaJudge</span>
+      <span class="logo-version">v0.1.0</span>
+    </div>
+    <div class="topbar-nav">
+      <button class="nav-btn active">辩论室</button>
+      <button class="nav-btn">裁决书</button>
+      <button class="nav-btn">题库</button>
+      <button class="nav-btn start-btn">⚡ 发起辩论</button>
+    </div>
+  </nav>
+
+  <!-- 问题横幅 -->
+  <div class="problem-banner">
+    <div class="problem-label">当前辩题</div>
+    <div class="problem-text">LLM 是否会在未来 10 年内取代人类在知识工作中的大部分岗位？</div>
+    <div class="problem-meta">
+      <span class="meta-tag"><span class="meta-dot"></span> run_id: PJ-20240617-A</span>
+      <span class="meta-tag">阶段: Phase 1 · 辩论进行中</span>
+      <span class="meta-tag">耗时: 4.2s</span>
+    </div>
+  </div>
+
+  <!-- 阶段指示器 -->
+  <div class="phase-indicator">
+    <div class="phase-step done">
+      <div class="phase-icon">📚</div>
+      <div>
+        <div class="phase-name">Phase 0<br><small>证据构建</small></div>
+      </div>
+    </div>
+    <div class="phase-step active">
+      <div class="phase-icon">🎤</div>
+      <div>
+        <div class="phase-name">Phase 1<br><small>正反辩论</small></div>
+      </div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-icon">🔍</div>
+      <div>
+        <div class="phase-name">Phase 2.1<br><small>审理审查</small></div>
+      </div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-icon">⚖️</div>
+      <div>
+        <div class="phase-name">Phase 2.2<br><small>裁决判定</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 辩论舞台 -->
+  <div class="main-grid">
+
+    <!-- 左侧：辩论主舞台 -->
+    <div class="debate-stage">
+
+      <div class="stage-header">
+        <div class="stage-title">
+          <span class="live-dot"></span>
+          辩论会议室
+        </div>
+        <span class="round-badge">第 2 轮 / 共 3 轮</span>
+      </div>
+
+      <!-- 辩手面板 -->
+      <div class="speakers-area">
+
+        <!-- 正方 -->
+        <div class="speaker-panel pro speaking" id="pro-panel">
+          <div class="moderator-badge">
+            <div class="mod-avatar">🎙</div>
+            主持人
+          </div>
+          <div class="speaker-avatar-wrap">
+            <div class="speaker-avatar avatar-pro">
+              <span class="avatar-glow-ring"></span>
+              🧑‍🔬
+            </div>
+            <div class="avatar-status speaking" id="pro-status">发言中</div>
+          </div>
+          <div class="speaker-name pro">Pro Agent</div>
+          <div class="speaker-role">正方 · 主张「LLM 将大幅取代人类工作」</div>
+          <div class="speaker-stance">基于 20 篇权威论文的证据包，正方认为 LLM 的生产力提升速度已超过历史上任何一次技术革命。</div>
+
+          <div class="argument-bubble pro visible" id="pro-arg-1">
+            <div class="argument-id">A-007 · 第 2 轮</div>
+            <div class="argument-text">根据 Eloundou et al. (2023) 的研究，GPTs 对美国劳动力市场的影响范围比此前预计的大 50% 以上，约 80% 的岗位将受到 LLM 能力的渗透 [...]</div>
+            <div class="argument-refs">
+              <span class="ref-tag">E-001</span>
+              <span class="ref-tag">E-003</span>
+              <span class="ref-tag">E-005</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 反方 -->
+        <div class="speaker-panel con" id="con-panel">
+          <div class="speaker-avatar-wrap">
+            <div class="speaker-avatar avatar-con">
+              <span class="avatar-glow-ring"></span>
+              🤖
+            </div>
+            <div class="avatar-status waiting" id="con-status">等待中</div>
+          </div>
+          <div class="speaker-name con">Con Agent</div>
+          <div class="speaker-role">反方 · 主张「LLM 无法真正取代人类工作」</div>
+          <div class="speaker-stance">历史上每次技术革命都创造了更多新岗位，AI 更可能是工作内容迁移而非净减少。</div>
+
+          <div class="argument-bubble con" id="con-arg-1">
+            <div class="argument-id">A-004 · 第 1 轮</div>
+            <div class="argument-text">Acemoglu & Restrepo (2022) 指出，自动化和 AI 确实会替代部分岗位，但同等数量的新任务和新职业会被同步创造 [...]</div>
+            <div class="argument-refs">
+              <span class="ref-tag">E-002</span>
+              <span class="ref-tag">E-008</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 辩论记录 -->
+      <div class="transcript-area">
+        <div class="transcript-title">📜 辩论记录</div>
+        <div class="transcript-scroll" id="transcript">
+          <div class="transcript-item">
+            <span class="transcript-side pro">PRO</span>
+            <div class="transcript-content">历史数据表明，技术革命从未造成净失业：从织布机到计算机，每次都创造了更多岗位 [...]</div>
+          </div>
+          <div class="transcript-item">
+            <span class="transcript-side con">CON</span>
+            <div class="transcript-content">但这一次 LLM 的渗透速度远超历史先例，两年内 ChatGPT 用户破亿，工业革命花了 60 年 [...]</div>
+          </div>
+          <div class="transcript-item">
+            <span class="transcript-side pro">PRO</span>
+            <div class="transcript-content">渗透速度快恰恰说明其通用性，意味着更多行业可以被提效而非被替代 [...]</div>
+          </div>
+          <div class="transcript-item">
+            <span class="transcript-side con">CON</span>
+            <div class="transcript-content">渗透速度越快，社会适应成本越高，转型期的失业问题比终态更重要 [...]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：侧边栏 -->
+    <div class="sidebar">
+
+      <!-- 裁决预览 -->
+      <div class="side-panel">
+        <div class="panel-header">
+          <div class="panel-title">⚖️ 实时裁决</div>
+        </div>
+        <div class="panel-body">
+          <div class="verdict-card">
+            <div class="verdict-winner pro" id="verdict-winner-text">⚡ 裁决中</div>
+            <div class="verdict-label">PRO · 正方 vs CON · 反方</div>
+            <div class="verdict-scores">
+              <div class="score-block pro">
+                <div class="score-num" id="score-pro">72.0</div>
+                <div class="score-label">正方</div>
+              </div>
+              <div class="score-divider">:</div>
+              <div class="score-block con">
+                <div class="score-num" id="score-con">65.4</div>
+                <div class="score-label">反方</div>
+              </div>
+            </div>
+            <button class="verdict-btn">📄 查看完整裁决书</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 五位法官 -->
+      <div class="side-panel">
+        <div class="panel-header">
+          <div class="panel-title">👨‍⚖️ 五位法官</div>
+          <span class="panel-count">5</span>
+        </div>
+        <div class="panel-body">
+          <div class="judge-cards" id="judge-list">
+            <div class="judge-card">
+              <div class="judge-header">
+                <div class="judge-info">
+                  <div class="judge-avatar" style="background: linear-gradient(135deg,#00b4d8,#0077b6);">📊</div>
+                  <div>
+                    <div class="judge-name">证据法法官</div>
+                    <div class="judge-type">Evidence Law</div>
+                  </div>
+                </div>
+                <div class="judge-score-display">
+                  <span class="score-pro">74</span><span class="score-vs">/</span><span class="score-con">68</span>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">P</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-pro" style="width:74%"></div>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">C</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-con" style="width:68%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="judge-card">
+              <div class="judge-header">
+                <div class="judge-info">
+                  <div class="judge-avatar" style="background: linear-gradient(135deg,#a78bfa,#7c6fff);">🧠</div>
+                  <div>
+                    <div class="judge-name">逻辑分析法官</div>
+                    <div class="judge-type">Logic Analysis</div>
+                  </div>
+                </div>
+                <div class="judge-score-display">
+                  <span class="score-pro">71</span><span class="score-vs">/</span><span class="score-con">70</span>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">P</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-pro" style="width:71%"></div>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">C</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-con" style="width:70%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="judge-card">
+              <div class="judge-header">
+                <div class="judge-info">
+                  <div class="judge-avatar" style="background: linear-gradient(135deg,#ffd166,#ff9f1c);">⚡</div>
+                  <div>
+                    <div class="judge-name">原则性法官</div>
+                    <div class="judge-type">Principle Law</div>
+                  </div>
+                </div>
+                <div class="judge-score-display">
+                  <span class="score-pro">78</span><span class="score-vs">/</span><span class="score-con">60</span>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">P</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-pro" style="width:78%"></div>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">C</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-con" style="width:60%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="judge-card">
+              <div class="judge-header">
+                <div class="judge-info">
+                  <div class="judge-avatar" style="background: linear-gradient(135deg,#ff4d6d,#c9184a);">📚</div>
+                  <div>
+                    <div class="judge-name">案例法法官</div>
+                    <div class="judge-type">Case Precedent</div>
+                  </div>
+                </div>
+                <div class="judge-score-display">
+                  <span class="score-pro">69</span><span class="score-vs">/</span><span class="score-con">67</span>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">P</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-pro" style="width:69%"></div>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">C</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-con" style="width:67%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="judge-card">
+              <div class="judge-header">
+                <div class="judge-info">
+                  <div class="judge-avatar" style="background: linear-gradient(135deg,#06d6a0,#00b4d8);">🚀</div>
+                  <div>
+                    <div class="judge-name">创新性法官</div>
+                    <div class="judge-type">Innovation</div>
+                  </div>
+                </div>
+                <div class="judge-score-display">
+                  <span class="score-pro">68</span><span class="score-vs">/</span><span class="score-con">62</span>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">P</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-pro" style="width:68%"></div>
+                </div>
+              </div>
+              <div class="judge-bar-row">
+                <span class="judge-bar-label">C</span>
+                <div class="judge-score-bar-bg">
+                  <div class="judge-score-bar-con" style="width:62%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 证据包 -->
+      <div class="side-panel">
+        <div class="panel-header">
+          <div class="panel-title">📚 证据包</div>
+          <span class="panel-count">3/20</span>
+        </div>
+        <div class="panel-body">
+          <div class="evidence-card highlight" id="ev-1">
+            <div class="ev-id">E-001</div>
+            <div class="ev-title">GPTs and the Labor Market: Economic Implications of LLMs</div>
+            <div class="ev-meta">Eloundou et al. · 2023 · arXiv · 引用 1200+</div>
+            <div class="ev-relevance">
+              <div class="relevance-bar-bg"><div class="relevance-bar" style="width:87%"></div></div>
+              <span class="relevance-val">87%</span>
+            </div>
+          </div>
+          <div class="evidence-card" id="ev-2">
+            <div class="ev-id">E-002</div>
+            <div class="ev-title">Automation and New Tasks: How Technology Changes Labor Demand</div>
+            <div class="ev-meta">Acemoglu & Restrepo · 2022 · AER · 引用 2000+</div>
+            <div class="ev-relevance">
+              <div class="relevance-bar-bg"><div class="relevance-bar" style="width:76%"></div></div>
+              <span class="relevance-val">76%</span>
+            </div>
+          </div>
+          <div class="evidence-card" id="ev-3">
+            <div class="ev-id">E-003</div>
+            <div class="ev-title">Generative AI at Work: Productivity Effects and Adaptation</div>
+            <div class="ev-meta">Brynjolfsson et al. · 2023 · NBER · 引用 800+</div>
+            <div class="ev-relevance">
+              <div class="relevance-bar-bg"><div class="relevance-bar" style="width:71%"></div></div>
+              <span class="relevance-val">71%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+  </div><!-- /main-grid -->
+
+  <!-- 发起辩论 -->
+  <div class="input-section" style="margin-top:20px">
+    <label class="input-label">🎯 输入你的研究问题，发起一场辩论</label>
+    <textarea class="input-field" placeholder="例如：LLM 是否会取代人类大部分工作？/ Transformer 是否会被新架构取代？/ 量子计算能否在 2030 年实现商业化？">LLM 是否会在未来 10 年内取代人类在知识工作中的大部分岗位？</textarea>
+    <div class="params-row">
+      <div class="param-field">
+        <span class="param-label">辩论轮数</span>
+        <select class="param-select">
+          <option>1 轮</option>
+          <option selected>2 轮</option>
+          <option>3 轮</option>
+          <option>5 轮</option>
+        </select>
+      </div>
+      <div class="param-field">
+        <span class="param-label">LLM 模型</span>
+        <select class="param-select">
+          <option selected>qwen-max (推荐)</option>
+          <option>gpt-4o</option>
+          <option>mock (离线测试)</option>
+        </select>
+      </div>
+      <div class="param-field">
+        <span class="param-label">证据上限</span>
+        <select class="param-select">
+          <option>5 条</option>
+          <option selected>20 条</option>
+          <option>30 条</option>
+        </select>
+      </div>
+    </div>
+    <button class="submit-btn" id="submit-btn">
+      <span>⚡</span> 发起辩论
+    </button>
+  </div>
+
+</div><!-- /app-container -->
+
+<!-- 加载动画遮罩 -->
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">ParaJudge 正在分析中...</div>
+  <div class="loading-phase" id="loading-phase">Phase 0 · 构建证据包</div>
+</div>
+
+<script>
+// 模拟辩论动画
+document.getElementById('submit-btn').addEventListener('click', function() {
+  const btn = this;
+  const loading = document.getElementById('loading');
+  const phaseText = document.getElementById('loading-phase');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 辩论进行中...';
+  loading.style.display = 'flex';
+
+  const phases = [
+    'Phase 0 · 构建证据包',
+    'Phase 1 · 正反方辩论',
+    'Phase 2.1 · 审理审查',
+    'Phase 2.2 · 五位法官裁决',
+  ];
+
+  let phaseIdx = 0;
+  const interval = setInterval(() => {
+    phaseIdx = (phaseIdx + 1) % phases.length;
+    phaseText.textContent = phases[phaseIdx];
+    if (phaseIdx === phases.length - 1) {
+      clearInterval(interval);
+      setTimeout(() => {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = '⚡ 发起辩论';
+      }, 800);
+    }
+  }, 1200);
+});
+
+// 证据卡点击高亮
+document.querySelectorAll('.evidence-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.classList.toggle('highlight');
+  });
+});
+
+// 发言气泡打字机效果
+function typeArgument(bubbleId, text) {
+  const el = document.getElementById(bubbleId);
+  el.textContent = '';
+  el.classList.add('visible');
+  let i = 0;
+  const interval = setInterval(() => {
+    el.textContent += text[i];
+    i++;
+    if (i >= text.length) clearInterval(interval);
+  }, 20);
+}
+</script>
+
+</body>
+</html>
