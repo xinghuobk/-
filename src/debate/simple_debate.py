@@ -50,8 +50,19 @@ class SimpleDebate:
 
         all_args: List[DebateArgument] = []
         arg_counter = 0
+        early_term = False
+        early_term_reason = None
 
         for round_idx in range(1, self.rounds + 1):
+            # --- 修复：T3 KS-style 早停检查（在每轮开始前执行） ---
+            if round_idx >= 2 and self._check_token_stagnation(all_args, round_idx):
+                early_term = True
+                early_term_reason = (
+                    f"T3 早停：第 {round_idx} 轮前检测到 token 停滞（连续 < 5 个新增 token），"
+                    f"辩论在第 {round_idx - 1} 轮后提前终止"
+                )
+                break
+
             # 构建历史摘要（第 2 轮起注入对方发言）
             history_text = ""
             if all_args:
@@ -132,6 +143,10 @@ class SimpleDebate:
                     generation_time=round(time.perf_counter() - t0, 3),
                 )
             ).to_dict()
+            # --- 修复：在 moderator report 中记录早停信息 ---
+            if early_term:
+                moderator_report_dict["early_termination"] = True
+                moderator_report_dict["early_termination_reason"] = early_term_reason
 
         return DebateTranscript(
             problem=problem,
@@ -143,6 +158,67 @@ class SimpleDebate:
             generation_time=round(time.perf_counter() - t0, 3),
             moderator_report=moderator_report_dict,
         )
+
+    # ------------------------------------------------------------------
+    # T3 早停：token 停滞检测
+    # ------------------------------------------------------------------
+    def _check_token_stagnation(
+        self,
+        all_args: List[DebateArgument],
+        next_round_idx: int,
+    ) -> bool:
+        """KS-style token 停滞检测。
+
+        逻辑：
+        - 按 round 聚合所有已发表的论点
+        - 计算每轮相对前一轮的新增 unique token
+        - 如果最近一轮（next_round_idx - 1）新增 token < 5
+          且相对前一轮（next_round_idx - 2）的比例 < 20%
+          则判定为"辩论已不再产生新信息"，返回 True 触发早停
+        """
+        if not all_args or next_round_idx < 2:
+            return False
+
+        # 按 round 聚合内容
+        by_round = {}
+        for a in all_args:
+            by_round.setdefault(a.round_index, []).append(a.content)
+
+        rounds_sorted = sorted(by_round.keys())
+        if len(rounds_sorted) < 2:
+            return False
+
+        # 统计每轮的 unique token 集合
+        import re
+        def _tokenize(text: str):
+            text = text.lower()
+            # 中文按字符，英文按词，简单方案：按字符（鲁棒）
+            return [c for c in text if c.strip() and c not in "，。！？、；：""''（）《》【】.,!?;:'\"()"]
+
+        per_round_new = []
+        seen_tokens = set()
+        for r in rounds_sorted:
+            all_toks = []
+            for content in by_round[r]:
+                all_toks.extend(_tokenize(content))
+            round_set = set(all_toks)
+            new_count = len(round_set - seen_tokens)
+            per_round_new.append(new_count)
+            seen_tokens |= round_set
+
+        # 检查：最近 2 轮是否满足 stagnation < 0.2 且绝对 < 5
+        if len(per_round_new) >= 2:
+            last_new = per_round_new[-1]
+            prev_new = per_round_new[-2]
+            if prev_new > 0:
+                ratio = last_new / prev_new
+                if ratio < 0.2 and last_new < 5:
+                    return True
+            # 退化：连续两轮绝对 token < 5
+            if len(per_round_new) >= 2 and per_round_new[-1] < 5 and per_round_new[-2] < 5:
+                return True
+
+        return False
 
     # ------------------------------------------------------------------
     # 单轮发言

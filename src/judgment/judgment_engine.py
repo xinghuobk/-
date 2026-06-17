@@ -56,6 +56,9 @@ class JudgmentEngine:
             if a.side == "con"
         ]
 
+        # --- 修复：从 moderator report 提取违规信息用于惩罚 ---
+        penalty = self._extract_moderator_penalty(transcript)
+
         # 构建审理摘要（供法官参考）
         review_summary = self._build_review_summary(review)
 
@@ -65,14 +68,19 @@ class JudgmentEngine:
             score = self._single_judge(judge_type, transcript.problem, brief, pro_args, con_args, review_summary)
             scores.append(score)
 
-        # 融合
-        pro_final = round(sum(s.pro_score for s in scores) / len(scores), 1)
-        con_final = round(sum(s.con_score for s in scores) / len(scores), 1)
+        # 融合（LLM 法官评分）
+        pro_raw = sum(s.pro_score for s in scores) / len(scores)
+        con_raw = sum(s.con_score for s in scores) / len(scores)
 
+        # --- 修复：应用 moderator 惩罚（离题论点扣分） ---
+        pro_final = round(max(0.0, pro_raw + penalty["pro"]), 1)
+        con_final = round(max(0.0, con_raw + penalty["con"]), 1)
+
+        # --- 修复：获胜阈值从 2.0 提高到 5.0 ---
         winner = "tie"
-        if pro_final - con_final > 2.0:
+        if pro_final - con_final > 5.0:
             winner = "pro"
-        elif con_final - pro_final > 2.0:
+        elif con_final - pro_final > 5.0:
             winner = "con"
 
         # 推理链
@@ -106,6 +114,15 @@ class JudgmentEngine:
                     f"法官对反方评分分歧较大（{min(con_scores)} ~ {max(con_scores)}）。"
                 )
 
+        # --- 修复：记录 moderator 惩罚 ---
+        if penalty["pro_off_topic"] > 0 or penalty["con_off_topic"] > 0:
+            uncertainties.append(
+                f"Moderator 离题惩罚：正方 -{abs(penalty['pro']):.1f} "
+                f"（{penalty['pro_off_topic']} 个论点离题），"
+                f"反方 -{abs(penalty['con']):.1f} "
+                f"（{penalty['con_off_topic']} 个论点离题）。"
+            )
+
         return JudgmentResult(
             winner=winner,
             pro_final_score=pro_final,
@@ -118,6 +135,62 @@ class JudgmentEngine:
             uncertainties=uncertainties,
             generation_time=round(time.perf_counter() - t0, 3),
         )
+
+    # ------------------------------------------------------------------
+    # Moderator 惩罚提取
+    # ------------------------------------------------------------------
+    def _extract_moderator_penalty(self, transcript) -> Dict:
+        """从 moderator report 提取离题/重复等违规并计算惩罚分。
+
+        规则（每项独立累加，上限 -15 分/方）：
+        - warn_off_topic: 每个违规论点扣 -4 分（离题是严重问题）
+        - warn_duplicate: 每个重复论点扣 -3 分
+        - warn_too_long: 每个超长论点扣 -1 分
+        """
+        report = getattr(transcript, "moderator_report", None)
+        if not report:
+            return {"pro": 0.0, "con": 0.0, "pro_off_topic": 0, "con_off_topic": 0}
+
+        notes = report.get("notes", []) if isinstance(report, dict) else []
+        pro_off_topic = 0
+        con_off_topic = 0
+        pro_penalty = 0.0
+        con_penalty = 0.0
+        MAX_PENALTY = -15.0
+
+        for note in notes:
+            action = note.get("action") if isinstance(note, dict) else None
+            side = note.get("target_side") if isinstance(note, dict) else None
+            if not action or not side:
+                continue
+
+            if action == "warn_off_topic":
+                delta = -4.0
+                if side == "pro":
+                    pro_off_topic += 1
+                    pro_penalty += delta
+                else:
+                    con_off_topic += 1
+                    con_penalty += delta
+            elif action == "warn_duplicate":
+                delta = -3.0
+                if side == "pro":
+                    pro_penalty += delta
+                else:
+                    con_penalty += delta
+            elif action == "warn_too_long":
+                delta = -1.0
+                if side == "pro":
+                    pro_penalty += delta
+                else:
+                    con_penalty += delta
+
+        return {
+            "pro": max(pro_penalty, MAX_PENALTY),
+            "con": max(con_penalty, MAX_PENALTY),
+            "pro_off_topic": pro_off_topic,
+            "con_off_topic": con_off_topic,
+        }
 
     # ------------------------------------------------------------------
     # 单法官评分

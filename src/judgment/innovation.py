@@ -242,19 +242,14 @@ def ks_early_stop_check(
 # ============================================================
 
 def ds_evidence_fusion(judge_scores: List[JudgeScore]) -> Dict:
-    """Dempster-Shafer 证据理论融合（轻量实现）。
+    """Dempster-Shafer 证据理论融合（轻量实现，v2 修正版）。
 
-    思路：
-    - 把每位法官的 [pro_score, con_score] 归一化为 mass 函数
-    - 简化：把 pro 视为一个命题，con 视为另一个命题
-    - 法官评分越接近 0/1 → mass 越集中；越接近 0.5 → 越不确定
-    - 用简化合成（直接平均再 renormalize）替代完整 DS 规则
-
-    返回：
-    - mass_pro / mass_con: 融合后对正/反的支持 mass
-    - confidence: 1 - 0.5 * |mass_pro - mass_con|，表示整体置信度
-    - entropy: 信息熵
-    - agreement: 法官意见一致性（标准差倒数）
+    v2 修正：
+    - 之前版本 confidence = 1 - 0.5*|mass_pro - mass_con|，
+      导致"双方势均力敌"时置信度 = 1.0（逻辑倒置）。
+    - 新公式：confidence = agreement * (0.5 + 0.5 * |mass_pro - mass_con|)
+      - mass 差距大 + 法官一致 → 高置信度
+      - mass 接近 + 法官分歧大 → 低置信度
     """
     if not judge_scores:
         return {"mass_pro": 0.5, "mass_con": 0.5, "confidence": 0.0, "entropy": 1.0, "agreement": 0.0}
@@ -286,7 +281,20 @@ def ds_evidence_fusion(judge_scores: List[JudgeScore]) -> Dict:
     mass_pro /= total
     mass_con /= total
 
-    confidence = 1.0 - 0.5 * abs(mass_pro - mass_con)
+    # --- 修复：confidence 公式修正（v2） ---
+    # mass 差距越大，法官越一致 → 置信度越高
+    mass_gap = abs(mass_pro - mass_con)
+
+    # 法官一致性：每方评分差的标准差
+    diffs = [abs(js.pro_score - js.con_score) for js in judge_scores]
+    mean_diff = sum(diffs) / len(diffs) if diffs else 0.0
+    var = sum((d - mean_diff) ** 2 for d in diffs) / len(diffs) if diffs else 0.0
+    std = math.sqrt(var)
+    agreement = round(1.0 / (1.0 + std / 25.0), 4)
+
+    # v2: confidence = 一致性 × 确定性
+    confidence = round(agreement * (0.5 + 0.5 * mass_gap), 4)
+
     # 信息熵
     eps = 1e-9
     entropy = -(
@@ -294,34 +302,28 @@ def ds_evidence_fusion(judge_scores: List[JudgeScore]) -> Dict:
         + (mass_con + eps) * math.log2(mass_con + eps)
     )
 
-    # 法官一致性：每方标准差
-    diffs = [abs(js.pro_score - js.con_score) for js in judge_scores]
-    mean_diff = sum(diffs) / len(diffs) if diffs else 0.0
-    var = sum((d - mean_diff) ** 2 for d in diffs) / len(diffs) if diffs else 0.0
-    std = math.sqrt(var)
-    agreement = round(1.0 / (1.0 + std / 25.0), 4)  # 标准差越小 → agreement 越高
-
     return {
         "judge_count": len(judge_scores),
         "mass_pro": round(mass_pro, 4),
         "mass_con": round(mass_con, 4),
-        "confidence": round(confidence, 4),
-        "entropy": round(entropy, 4),
+        "confidence": confidence,
         "agreement": agreement,
+        "mass_gap": round(mass_gap, 4),
+        "entropy": round(entropy, 4),
         "interpretation": _ds_interpretation(mass_pro, mass_con, confidence, agreement),
     }
 
 
 def _ds_interpretation(mass_pro: float, mass_con: float, conf: float, agreement: float) -> str:
     if agreement < 0.5:
-        return f"法官分歧较大（一致性 {agreement:.2f}），建议谨慎采信"
+        return f"法官分歧较大（一致性 {agreement:.2f}），建议谨慎采信（置信度 {conf:.2f}）"
     if conf > 0.85:
         leader = "正方" if mass_pro > mass_con else "反方"
-        return f"DS 融合置信度 {conf:.2f}，{leader}胜出（mass={max(mass_pro, mass_con):.2f}）"
+        return f"T4 DS 融合：{leader} 胜出，置信度 {conf:.2f}（mass={max(mass_pro, mass_con):.2f}）"
     elif conf > 0.6:
-        return f"DS 融合置信度 {conf:.2f}，{('正' if mass_pro > mass_con else '反')}方略占优但不确定"
+        return f"T4 DS 融合：{'正' if mass_pro > mass_con else '反'}方略占优，置信度 {conf:.2f}（未达显著）"
     else:
-        return f"DS 融合置信度低（{conf:.2f}），双方势均力敌"
+        return f"T4 DS 融合：双方势均力敌，置信度低（{conf:.2f}）"
 
 
 # ============================================================

@@ -228,34 +228,42 @@ class LLMClient:
         return json.dumps(result, ensure_ascii=False, indent=2)
 
     def _mock_judge_score(self, prompt: str) -> str:
-        """返回 mock 法官评分。根据 prompt 中出现的关键字给不同的 bias。"""
-        # 启发式：不同类型的法官给不同的 base 评分
-        if "证据法法官" in prompt or "evidence" in prompt.lower():
-            base_pro, base_con = 72, 65
-            pro_fb = "证据引用充分，论点结构清晰，实证数据支持有力。"
-            con_fb = "论点基于历史类比推理，虽然有启发性，但缺乏直接实证支持。"
-        elif "逻辑分析法官" in prompt or "logic" in prompt.lower():
-            base_pro, base_con = 70, 68
-            pro_fb = "推理链完整，各论点之间存在递进关系。"
-            con_fb = "逻辑自洽，但缺乏对反方论点的具体回应。"
-        elif "原则性法官" in prompt or "principle" in prompt.lower():
-            base_pro, base_con = 68, 72
-            pro_fb = "结论过于偏向效率，未充分考虑长期社会影响。"
-            con_fb = "对公平性与可持续性的考量更加周全。"
-        elif "案例法法官" in prompt or "case" in prompt.lower():
-            base_pro, base_con = 70, 68
-            pro_fb = "引用了具体案例，但样本覆盖面有限。"
-            con_fb = "合理引用了技术革命历史案例。"
-        elif "创新性法官" in prompt or "innovation" in prompt.lower():
-            base_pro, base_con = 65, 75
-            pro_fb = "论证较为保守，缺乏新颖的视角。"
-            con_fb = "提出了对人类创造性的更深刻解读，创新性更强。"
-        else:
-            base_pro, base_con = 68, 68
-            pro_fb = con_fb = "综合评估。"
+        """返回 mock 法官评分（v2：对称性修正）。
 
-        pro_score = max(0, min(100, base_pro + random.randint(-3, 3)))
-        con_score = max(0, min(100, base_con + random.randint(-3, 3)))
+        v2 修正：
+        - 5 位法官使用相同的 base 分数（70/70），不系统性偏向任一方
+        - 每位法官有独立的随机扰动（±4），模拟不同视角的合理分歧
+        - 不根据 prompt 中关键字人为制造正方/反方 bias
+        """
+        # 5 位法官共用 baseline，但用 judge_type 名注入不同 seed 保证可复现
+        import hashlib
+        judge_token = ""
+        for kw in ["证据法法官", "证据", "逻辑分析法官", "逻辑", "原则性法官",
+                   "原则", "案例法法官", "案例", "创新性法官", "创新",
+                   "evidence", "logic", "principle", "case", "innovation"]:
+            if kw in prompt.lower() or kw in prompt:
+                judge_token = kw
+                break
+
+        # 用 judge 类型 + prompt hash 生成伪随机 seed（保证同一法官同一问题稳定）
+        seed = int(hashlib.md5((judge_token + prompt[:100]).encode("utf-8")).hexdigest(), 16)
+        rng = random.Random(seed % (2**31))
+
+        # 对称 base 分数 + ±4 扰动（不再人为偏向一方）
+        base_pro, base_con = 70, 70
+        pro_score = max(0, min(100, base_pro + rng.randint(-4, 4)))
+        con_score = max(0, min(100, base_con + rng.randint(-4, 4)))
+
+        # 反馈信息保持中性
+        if pro_score > con_score + 3:
+            pro_fb = "论证更有说服力，证据/逻辑/案例综合表现更佳。"
+            con_fb = "论证质量一般，论点之间的衔接有待加强。"
+        elif con_score > pro_score + 3:
+            pro_fb = "论证质量一般，论点之间的衔接有待加强。"
+            con_fb = "论证更有说服力，证据/逻辑/案例综合表现更佳。"
+        else:
+            pro_fb = "论证有一定说服力，但未形成压倒性优势。"
+            con_fb = "论证有一定说服力，但未形成压倒性优势。"
 
         return json.dumps({
             "pro_score": pro_score,

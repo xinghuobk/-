@@ -1,6 +1,6 @@
 # ParaJudge 统计检验报告
 
-生成时间: 2026-06-17T05:30:01Z
+生成时间: 2026-06-17T06:06:51Z
 
 ## exp1_T1_HITS
 
@@ -17,12 +17,12 @@
 {
   "status": "OK",
   "n": 24,
-  "mean_pro": 72.15,
-  "mean_con": 64.8583,
-  "p_value": 0.0,
-  "cohens_d": 7.5969,
+  "mean_pro": 54.7333,
+  "mean_con": 54.8333,
+  "p_value": 0.781484,
+  "cohens_d": -0.0847,
   "method": "paired t-test (scipy.stats.ttest_rel)",
-  "conclusion": "显著"
+  "conclusion": "不显著"
 }
 ```
 
@@ -32,17 +32,17 @@
 {
   "status": "OK",
   "n_groups": 6,
-  "F_statistic": 0.9664,
-  "p_value": 0.440673,
+  "F_statistic": 0.0014,
+  "p_value": 1.0,
   "method": "one-way ANOVA (scipy.stats.f_oneway)",
   "conclusion": "组间差异不显著",
   "group_means": {
-    "full": 6.975,
-    "no_T1": 6.7417,
-    "no_T2": 6.7833,
-    "no_T3": 7.1333,
-    "no_T4": 7.4417,
-    "all_off": 7.0167
+    "full": -0.1,
+    "no_T1": -0.1,
+    "no_T2": -0.1,
+    "no_T3": -0.1,
+    "no_T4": -0.1,
+    "all_off": -0.0667
   }
 }
 ```
