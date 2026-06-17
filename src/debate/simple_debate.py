@@ -20,6 +20,7 @@ from backend.models.schemas import (
 )
 from src.writer.llm_client import LLMClient
 from src.debate.prompts import build_debater_prompt
+from src.debate.moderator import Moderator
 
 
 # ============================================================
@@ -33,11 +34,13 @@ class SimpleDebate:
         rounds: int = 3,
         pro_stance: str = "正方：主张问题的答案为「是」",
         con_stance: str = "反方：主张问题的答案为「否」",
+        moderator: Optional[Moderator] = None,
     ):
         self.llm = llm
         self.rounds = max(1, rounds)
         self.pro_stance = pro_stance
         self.con_stance = con_stance
+        self.moderator = moderator
 
     # ------------------------------------------------------------------
     # 主入口
@@ -58,7 +61,19 @@ class SimpleDebate:
                     history_lines.append(f"[{a.side}-R{a.round_index}] {a.content}  [引用: {refs}]")
                 history_text = "\n".join(history_lines)
 
+            # 主持人主动干预判定（在两方发言之间）
+            if self.moderator:
+                intervention = self.moderator.maybe_intervene(
+                    problem=problem,
+                    current_round=round_idx,
+                    max_rounds=self.rounds,
+                    recent_args=all_args,
+                )
+                # 干预信息不阻断流程，仅记录
+
             # 正方
+            if self.moderator:
+                self.moderator.on_turn_start(side="pro", round_index=round_idx)
             pro_args = self._speaker_speak(
                 speaker="Pro Agent",
                 side="pro",
@@ -70,8 +85,14 @@ class SimpleDebate:
             )
             arg_counter += len(pro_args)
             all_args.extend(pro_args)
+            # 主持人检查正方发言
+            if self.moderator:
+                for a in pro_args:
+                    self.moderator.check_argument(a, problem, all_args)
 
             # 反方
+            if self.moderator:
+                self.moderator.on_turn_start(side="con", round_index=round_idx)
             con_args = self._speaker_speak(
                 speaker="Con Agent",
                 side="con",
@@ -83,6 +104,10 @@ class SimpleDebate:
             )
             arg_counter += len(con_args)
             all_args.extend(con_args)
+            # 主持人检查反方发言
+            if self.moderator:
+                for a in con_args:
+                    self.moderator.check_argument(a, problem, all_args)
 
         # 构建 ArgumentIndex
         pro_args = [a for a in all_args if a.side == "pro"]
@@ -93,6 +118,21 @@ class SimpleDebate:
             con_count=len(con_args),
         )
 
+        # 主持人总结报告
+        moderator_report_dict = None
+        if self.moderator:
+            moderator_report_dict = self.moderator.on_debate_end(
+                DebateTranscript(
+                    problem=problem,
+                    pro_stance=self.pro_stance,
+                    con_stance=self.con_stance,
+                    rounds_total=self.rounds,
+                    arguments=all_args,
+                    argument_index=argument_index,
+                    generation_time=round(time.perf_counter() - t0, 3),
+                )
+            ).to_dict()
+
         return DebateTranscript(
             problem=problem,
             pro_stance=self.pro_stance,
@@ -101,6 +141,7 @@ class SimpleDebate:
             arguments=all_args,
             argument_index=argument_index,
             generation_time=round(time.perf_counter() - t0, 3),
+            moderator_report=moderator_report_dict,
         )
 
     # ------------------------------------------------------------------

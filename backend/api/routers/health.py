@@ -51,5 +51,5 @@ async def version() -> VersionResponse:
         version=_VERSION,
         api_version=_API_VERSION,
         python_version=platform.python_version(),
-        llm_providers=["mock", "openai", "dashscope"],
+        llm_providers=["mock", "openai", "dashscope", "ollama"],
     )

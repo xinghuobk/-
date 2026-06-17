@@ -40,10 +40,11 @@ class LLMResponse:
 class LLMClient:
     """统一 LLM 调用客户端。
 
-    provider: 'mock' | 'openai' | 'dashscope'
+    provider: 'mock' | 'openai' | 'dashscope' | 'ollama'
         - mock: 离线测试，根据 prompt 内容返回合理的模拟响应
-        - openai: OpenAI ChatCompletion（或兼容协议的端点）
+        - openai: OpenAI ChatCompletion（或兼容协议的端点，如 vLLM / OpenRouter）
         - dashscope: 通义千问原生 SDK
+        - ollama: 本地 Ollama 服务（OpenAI 兼容协议，默认 http://localhost:11434）
     """
 
     def __init__(
@@ -51,10 +52,36 @@ class LLMClient:
         provider: str = "mock",
         model: str = "mock-model",
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        timeout: float = 60.0,
     ):
         self.provider = provider.strip().lower()
-        self.model = model.strip()
+        self.model = self._normalize_model_name(self.provider, model)
         self.api_key = api_key
+        self.base_url = (base_url or self._default_base_url(self.provider)).rstrip("/")
+        self.timeout = timeout
+
+    @staticmethod
+    def _default_base_url(provider: str) -> str:
+        return {
+            "ollama": "http://localhost:11434/v1",
+            "openai": "https://api.openai.com/v1",
+            "dashscope": "",
+            "mock": "",
+        }.get(provider, "")
+
+    @staticmethod
+    def _normalize_model_name(provider: str, model: str) -> str:
+        """规范化模型名：空/mock-model → 用 provider 默认值。"""
+        defaults = {
+            "openai": "gpt-3.5-turbo",
+            "dashscope": "qwen-max",
+            "ollama": "qwen2.5:7b",
+            "mock": "mock-model",
+        }
+        if not model or model == "mock-model":
+            return defaults.get(provider, model or "mock-model")
+        return model
 
     # ------------------------------------------------------------------
     # 主接口
@@ -108,6 +135,8 @@ class LLMClient:
             content = self._mock_response(prompt, max_tokens)
         elif self.provider == "openai":
             content = self._openai_call(prompt, max_tokens, temperature)
+        elif self.provider == "ollama":
+            content = self._ollama_call(prompt, max_tokens, temperature)
         elif self.provider == "dashscope":
             content = self._dashscope_call(prompt, max_tokens, temperature)
         else:
@@ -136,17 +165,21 @@ class LLMClient:
         """
         p_lower = prompt.lower()
 
-        # --- 辩论：正反方论点 ---
+        # --- 优先级 1：法官评分（最具体，含法官角色名） ---
+        # 必须在 review 之前，因为 review_summary 可能含 "issue_type" 关键词
+        if any(kw in prompt for kw in [
+            "证据法法官", "逻辑分析法官", "原则性法官", "案例法法官", "创新性法官",
+            "通用法官"
+        ]) or ("pro_score" in p_lower and "con_score" in p_lower):
+            return self._mock_judge_score(prompt)
+
+        # --- 优先级 2：辩论：正反方论点 ---
         if "arguments" in p_lower and ("json" in p_lower or "pro" in p_lower or "con" in p_lower):
             return self._mock_debate_arguments(prompt)
 
-        # --- 审理：问题清单 ---
+        # --- 优先级 3：审理：问题清单 ---
         if ("issue" in p_lower and "json" in p_lower) or ("invalid_cite" in p_lower or "weak_support" in p_lower):
             return self._mock_review_issues(prompt)
-
-        # --- 裁决：法官评分 ---
-        if ("pro_score" in p_lower and "con_score" in p_lower) or "judge" in p_lower:
-            return self._mock_judge_score(prompt)
 
         # --- 默认：返回简短文本提示 ---
         return "[MOCK] This is a placeholder response from the mock LLM backend. Enable a real provider (openai/dashscope) by setting the corresponding API key environment variable."
@@ -301,6 +334,65 @@ class LLMClient:
                 return data.get("output", {}).get("text", str(data))
         except Exception as exc:
             return f"[dashscope call failed: {exc}]"
+
+    # ------------------------------------------------------------------
+    # provider: ollama（本地 LLM，OpenAI 兼容协议）
+    # ------------------------------------------------------------------
+
+    def _ollama_call(self, prompt: str, max_tokens: int, temperature: float) -> str:
+        """调用本地 Ollama 服务。
+
+        Ollama 提供 OpenAI 兼容 API：POST /v1/chat/completions
+        端点默认 http://localhost:11434/v1，无需 API key。
+
+        若本地未启动 Ollama，会降级返回 mock 响应。
+        """
+        try:
+            import urllib.request
+            import urllib.error
+
+            body = json.dumps({
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "stream": False,
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                f"{self.base_url}/chat/completions",
+                data=body,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.api_key or 'ollama'}",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"]
+        except urllib.error.URLError as exc:
+            # 本地 Ollama 未启动 → 降级 mock
+            if "Connection refused" in str(exc) or "Errno 111" in str(exc) or "Errno 61" in str(exc):
+                return self._mock_ollama_unavailable(prompt, exc)
+            return f"[ollama call failed: {exc}]"
+        except Exception as exc:
+            return f"[ollama call failed: {exc}]"
+
+    def _mock_ollama_unavailable(self, prompt: str, exc: Exception) -> str:
+        """当 Ollama 不可用时的降级 mock，明确提示用户启动服务。"""
+        return json.dumps({
+            "_warning": "ollama_unavailable",
+            "_detail": f"无法连接 Ollama ({exc})，请先启动服务：ollama serve",
+            "_fallback": True,
+            "reasoning": "Ollama 不可用，返回 mock 响应",
+            "arguments": [
+                {
+                    "content": "Ollama 服务未启动，请先运行 'ollama serve' 并执行 'ollama pull qwen2.5:7b' 拉取模型。",
+                    "evidence_refs": ["SYSTEM"]
+                }
+            ]
+        }, ensure_ascii=False)
 
     # ------------------------------------------------------------------
     # 工具：JSON 提取

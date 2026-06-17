@@ -46,11 +46,12 @@ class VersionResponse(BaseModel):
 # ============================================================
 
 class LLMConfig(BaseModel):
-    provider: str = Field(default="mock", description="mock / openai / dashscope")
+    provider: str = Field(default="mock", description="mock / openai / dashscope / ollama")
     model: str = Field(default="mock-model")
-    api_key: Optional[str] = Field(default=None, description="留空从环境变量读取")
+    api_key: Optional[str] = Field(default=None, description="留空从环境变量读取；ollama 可留空")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=500, ge=50, le=8000)
+    base_url: Optional[str] = Field(default=None, description="OpenAI 兼容端点，如 ollama 用 http://localhost:11434/v1")
 
 
 # ============================================================
@@ -77,6 +78,11 @@ class ParaJudgeRunRequest(BaseModel):
     rounds: int = Field(default=3, ge=1, le=8)
     max_evidence: int = Field(default=20, ge=1, le=50)
     enable_llm_review: bool = Field(default=True)
+    enable_moderator: bool = Field(default=True, description="是否启用主持人")
+    moderator_strictness: str = Field(default="normal", description="loose / normal / strict")
+    enable_t1_aebg: bool = Field(default=True, description="T1 论点-证据二部图")
+    enable_t3_ks: bool = Field(default=True, description="T3 KS 早停检验")
+    enable_t4_ds: bool = Field(default=True, description="T4 DS 证据理论融合")
     llm: LLMConfig = Field(default_factory=LLMConfig)
     moderator: Optional[ModeratorConfigDTO] = None
 

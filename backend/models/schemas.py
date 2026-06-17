@@ -564,6 +564,10 @@ class DebateTranscript(BaseModel):
     arguments: List[DebateArgument] = Field(default_factory=list)
     argument_index: ArgumentIndex = Field(default_factory=ArgumentIndex)
     generation_time: float = 0.0
+    # 主持人报告（来自 Moderator，可选）
+    moderator_report: Optional[Dict[str, Any]] = Field(
+        default=None, description="主持人报告（notes / interventions / warnings / early_termination）"
+    )
 
 
 # ============================================================

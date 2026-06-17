@@ -86,6 +86,14 @@ PROVIDERS = [
         requires_api_key=True,
         description="阿里云通义千问原生 SDK",
     ),
+    LLMProviderInfo(
+        code="ollama",
+        name="Ollama（本地免费）",
+        available=True,
+        models=["qwen2.5:7b", "qwen2.5:14b", "llama3.1:8b", "deepseek-r1:7b"],
+        requires_api_key=False,
+        description="本地免费 LLM：先安装 Ollama（https://ollama.com），再 ollama pull qwen2.5:7b 即可，OpenAI 兼容协议 http://localhost:11434/v1",
+    ),
 ]
 
 

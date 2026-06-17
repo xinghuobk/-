@@ -45,6 +45,11 @@ async def run_sync(req: ParaJudgeRunRequest) -> ParaJudgeRunResponse:
             rounds=req.rounds,
             max_evidence=req.max_evidence,
             enable_llm_review=req.enable_llm_review,
+            enable_moderator=req.enable_moderator,
+            moderator_strictness=req.moderator_strictness,
+            enable_t1_aebg=req.enable_t1_aebg,
+            enable_t3_ks=req.enable_t3_ks,
+            enable_t4_ds=req.enable_t4_ds,
         )
         t_end = time.time()
     except Exception as e:  # noqa: BLE001
@@ -72,6 +77,7 @@ async def run_sync(req: ParaJudgeRunRequest) -> ParaJudgeRunResponse:
                 "phase_2_1_review": result.review.generation_time,
                 "phase_2_2_judgment": result.judgment.generation_time,
             },
+            "moderator_report": result.transcript.moderator_report,
         },
     )
 
@@ -106,6 +112,11 @@ async def create_job(req: JobCreateRequest) -> JobCreateResponse:
                 rounds=req.rounds,
                 max_evidence=req.max_evidence,
                 enable_llm_review=req.enable_llm_review,
+                enable_moderator=req.enable_moderator,
+                moderator_strictness=req.moderator_strictness,
+                enable_t1_aebg=req.enable_t1_aebg,
+                enable_t3_ks=req.enable_t3_ks,
+                enable_t4_ds=req.enable_t4_ds,
             )
         )
         j.phase_durations["phase_0_evidence"] = round(time.time() - t0, 2)

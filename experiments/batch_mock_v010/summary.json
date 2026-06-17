@@ -1,0 +1,22 @@
+{
+  "config": {
+    "provider": "mock",
+    "model": "mock-model",
+    "rounds": 2,
+    "max_evidence": 5,
+    "temperature": 0.7,
+    "base_url": null
+  },
+  "timestamp": "2026-06-17T03:19:03.463505",
+  "total_questions": 6,
+  "total_time_sec": 71.29,
+  "avg_time_sec": 11.88,
+  "winners": {
+    "pro": 6,
+    "con": 0,
+    "tie": 0,
+    "error": 0
+  },
+  "avg_pro_score": 71.87,
+  "avg_con_score": 65.27
+}

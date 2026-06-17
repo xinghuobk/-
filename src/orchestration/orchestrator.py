@@ -11,6 +11,7 @@ from typing import Optional
 from backend.models.schemas import FullPipelineOutput, EvidenceBrief
 from src.debate.evidence_builder import build_evidence_brief
 from src.debate.simple_debate import SimpleDebate
+from src.debate.moderator import Moderator, ModeratorConfig, ModeratorStrictness
 from src.judgment.review_engine import ReviewEngine
 from src.judgment.judgment_engine import JudgmentEngine
 from src.writer.llm_client import LLMClient
@@ -24,17 +25,27 @@ def run_parajudge(
     rounds: int = 3,
     max_evidence: int = 20,
     enable_llm_review: bool = True,
+    enable_moderator: bool = True,
+    moderator_strictness: str = "normal",
+    enable_t1_aebg: bool = True,
+    enable_t3_ks: bool = True,
+    enable_t4_ds: bool = True,
 ) -> FullPipelineOutput:
     """执行完整的 ParaJudge 流程。
 
     Args:
         problem: 待辩论的问题文本
-        provider: LLM 提供商（mock / openai / dashscope）
+        provider: LLM 提供商（mock / openai / dashscope / ollama）
         model: 具体模型名称
-        api_key: 可选的 API Key（如为 None 会从环境变量读取）
+        api_key: 可选的 API Key（Ollama 模式可留空）
         rounds: 辩论轮数（每轮 = 正方 + 反方各发言一次）
         max_evidence: Phase 0 证据包的最大条数
         enable_llm_review: 是否启用 LLM 辅助的审理检查
+        enable_moderator: 是否启用主持人
+        moderator_strictness: 主持人严格度 loose / normal / strict
+        enable_t1_aebg: 是否启用 T1 论点-证据二部图创新点
+        enable_t3_ks: 是否启用 T3 KS 早停检验
+        enable_t4_ds: 是否启用 T4 DS 证据理论融合
 
     Returns:
         FullPipelineOutput: 包含所有阶段产物的结构化输出
@@ -47,17 +58,73 @@ def run_parajudge(
     # ── Phase 0 · 证据构建 ─────────────────────────────
     brief: EvidenceBrief = build_evidence_brief(problem, max_papers=max_evidence)
 
-    # ── Phase 1 · 辩论 ─────────────────────────────────
-    debater = SimpleDebate(llm, rounds=rounds)
+    # ── Phase 1 · 辩论（含主持人）────────────────────
+    moderator: Optional[Moderator] = None
+    if enable_moderator:
+        try:
+            strict_enum = ModeratorStrictness(moderator_strictness)
+        except ValueError:
+            strict_enum = ModeratorStrictness.NORMAL
+        moderator = Moderator(
+            config=ModeratorConfig(strictness=strict_enum),
+            llm=llm,
+        )
+    debater = SimpleDebate(llm, rounds=rounds, moderator=moderator)
     transcript = debater.run(problem, brief)
+
+    # ── T1 AEBG（论点-证据二部图）─ 可选附加分析 ──────
+    if enable_t1_aebg:
+        try:
+            from src.judgment.innovation import build_argument_evidence_bipartite
+            aebg_summary = build_argument_evidence_bipartite(transcript, brief)
+            # 注入到 moderator_report 元数据（保持原结构兼容）
+            if transcript.moderator_report is None:
+                transcript.moderator_report = {}
+            transcript.moderator_report["t1_aebg"] = aebg_summary
+        except Exception as e:
+            # 创新点失败不应阻断主流程
+            if transcript.moderator_report is None:
+                transcript.moderator_report = {}
+            transcript.moderator_report["t1_aebg_error"] = str(e)
+
+    # ── T3 KS 早停检验 ───────────────────────────────
+    if enable_t3_ks:
+        try:
+            from src.judgment.innovation import ks_early_stop_check
+            ks_result = ks_early_stop_check(transcript)
+            if transcript.moderator_report is None:
+                transcript.moderator_report = {}
+            transcript.moderator_report["t3_ks"] = ks_result
+        except Exception as e:
+            if transcript.moderator_report is None:
+                transcript.moderator_report = {}
+            transcript.moderator_report["t3_ks_error"] = str(e)
 
     # ── Phase 2.1 · 审理 ───────────────────────────────
     reviewer = ReviewEngine(llm=llm, enable_llm_check=enable_llm_review)
     review = reviewer.run(transcript, brief)
 
-    # ── Phase 2.2 · 裁决 ───────────────────────────────
+    # ── Phase 2.2 · 裁决（含 T4 DS 融合可选）─────────
     judge = JudgmentEngine(llm)
     judgment = judge.run(transcript, brief, review)
+
+    # ── T4 DS 证据理论融合（重算最终分） ──────────────
+    if enable_t4_ds:
+        try:
+            from src.judgment.innovation import ds_evidence_fusion
+            ds_result = ds_evidence_fusion(judgment.judge_scores)
+            # 注入不确定性信息（不覆盖主分数，避免破坏兼容）
+            if judgment.uncertainties is None:
+                judgment.uncertainties = []
+            judgment.uncertainties.append(
+                f"T4 DS 融合置信度 = {ds_result.get('confidence', 0):.2f} | "
+                f"支持正方 mass={ds_result.get('mass_pro', 0):.2f}, "
+                f"反方 mass={ds_result.get('mass_con', 0):.2f}"
+            )
+        except Exception as e:
+            if judgment.uncertainties is None:
+                judgment.uncertainties = []
+            judgment.uncertainties.append(f"T4 DS 融合失败: {e}")
 
     return FullPipelineOutput(
         run_id=str(uuid.uuid4())[:8],
@@ -95,13 +162,53 @@ def render_console(output: FullPipelineOutput) -> str:
         f"  辩论轮 : {t.rounds_total} 轮 / 论点 {len(t.arguments)} 个",
         f"  审理问题 : 严重 {r.critical_count} / 警告 {r.warning_count}",
         "",
+    ]
+
+    # ── 主持人报告 ──
+    if t.moderator_report:
+        mr = t.moderator_report
+        lines.extend([
+            "─" * 68,
+            f"  🎙️  主持人报告",
+            "─" * 68,
+            f"  干预次数: {mr.get('interventions', 0)} | 警告次数: {mr.get('warnings', 0)}",
+            f"  辩论总时长: {mr.get('total_debate_sec', 0)}s | 平均轮时长: {mr.get('avg_turn_sec', 0)}s",
+        ])
+        # 显示最近 5 条主持人 notes
+        for n in mr.get("notes", [])[:5]:
+            sev_icon = "❌" if n.get("severity") == "critical" else ("⚠️" if n.get("severity") == "warn" else "ℹ️")
+            lines.append(
+                f"   {sev_icon} [{n.get('action', '?')}] R{n.get('round_index', '?')}: {n.get('message', '')[:100]}"
+            )
+        # 创新点数据
+        if "t1_aebg" in mr:
+            aebg = mr["t1_aebg"]
+            lines.extend([
+                "",
+                f"  【T1 论点-证据二部图】",
+                f"    节点 {aebg.get('nodes', {}).get('total', 0)} / 边 {aebg.get('edges', 0)} / 密度 {aebg.get('density', 0):.2%}",
+                f"    正引 {aebg.get('pro_cited_count', 0)} 条 / 反引 {aebg.get('con_cited_count', 0)} 条 / 共引 {aebg.get('shared_evidence_count', 0)} 条",
+                f"    {aebg.get('comment', '')}",
+            ])
+        if "t3_ks" in mr:
+            ks = mr["t3_ks"]
+            stop_icon = "🛑" if ks.get("suggest_early_stop") else "▶️"
+            lines.extend([
+                "",
+                f"  【T3 KS 早停检验】{stop_icon}",
+                f"    每轮新增 token: {ks.get('per_round_new_tokens', [])}",
+                f"    停滞比例: {ks.get('stagnation_ratio', 'N/A')} | {ks.get('reason', '')}",
+            ])
+        lines.append("")
+
+    lines.extend([
         "─" * 68,
         f"  ★ 裁决结论：{winner_label}",
         f"    正方 {j.pro_final_score:>5.1f}   vs   反方 {j.con_final_score:>5.1f}",
         "─" * 68,
         "",
         "  【各法官评分】",
-    ]
+    ])
     for js in j.judge_scores:
         lines.append(
             f"   - {js.judge_name:12s}｜正方 {js.pro_score:>5.1f} / 反方 {js.con_score:>5.1f}｜{js.reasoning[:50]}"
