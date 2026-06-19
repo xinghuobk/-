@@ -47,6 +47,9 @@ from src.judgment.fact_checker import FactChecker  # noqa: E402
 from src.writer.llm_client import LLMClient  # noqa: E402
 from src.judgment.judgment_config import CFG  # noqa: E402
 
+# 迭代开发模块（lazy import 以避免循环依赖）
+_iteration_mod = None
+
 
 # ========================================================================
 #  —— Loop 的可变配置（与 CFG 不可变的全局参数互补） ——
@@ -358,7 +361,7 @@ def do_phase3(state: LoopState) -> str:
 Command = Callable[[LoopState, List[str]], Optional[str]]
 
 COMMANDS: Dict[str, Tuple[str, str]] = {
-    # cmd: (简要说明, 详细用法)
+    # ── 核心命令 ────────────────────────────────────────────────
     "help":     ("显示帮助", "help / ?"),
     "problem":  ("设置辩论问题", "problem <文本>  或仅 `problem` 查看"),
     "set":      ("修改运行参数", "set <key> <value>。用 `config` 查看参数"),
@@ -371,22 +374,46 @@ COMMANDS: Dict[str, Tuple[str, str]] = {
     "export":   ("导出最近结果", "export <path> [json|md]"),
     "clear":    ("清空中间结果", "clear"),
     "quit":     ("退出", "quit / exit / Ctrl-D"),
+    # ── 迭代开发命令 ────────────────────────────────────────────
+    "report":       ("生成迭代报告", "report"),
+    "test/run":     ("运行回归测试", "test/run"),
+    "iter/detect":  ("自动检测系统问题", "iter/detect"),
+    "iter/run":     ("执行完整迭代", "iter/run [版本号]"),
+    "issue/list":   ("列出问题", "issue/list [category] [priority] [status]"),
+    "issue/stats":  ("问题统计", "issue/stats"),
+    "issue/add":    ("添加问题", "issue/add <标题> <类别> [优先级]"),
+    "issue/fix":    ("标记已修复", "issue/fix <issue_id>"),
+    "exp/run":      ("运行实验", "exp/run [notes]"),
+    "exp/compare":  ("对比实验", "exp/compare <exp_id_a> <exp_id_b>"),
 }
 
 
 def cmd_help(state: LoopState, args: List[str]) -> Optional[str]:
-    lines = [C.wrap("  可用命令:", C.BOLD, C.CYAN)]
-    for cmd, (brief, usage) in COMMANDS.items():
-        lines.append(
-            f"    {C.wrap(f'{cmd:10s}', C.BOLD, C.GREEN)} "
-            f"{brief}  "
-            f"{C.wrap(usage, C.GRAY)}"
-        )
+    lines = [C.wrap("  可用命令（按功能分组）:", C.BOLD, C.CYAN)]
+
+    # 分组显示
+    groups = [
+        ("核心命令", ["help", "problem", "set", "config", "run", "step",
+                      "show", "compare", "history", "export", "clear", "quit"]),
+        ("迭代开发", ["report", "test/run", "iter/detect", "iter/run",
+                      "issue/list", "issue/stats", "issue/add", "issue/fix",
+                      "exp/run", "exp/compare"]),
+    ]
+    for group_name, cmds in groups:
+        lines.append("")
+        lines.append(C.wrap(f"  【{group_name}】", C.BOLD, C.CYAN))
+        for cmd in cmds:
+            if cmd in COMMANDS:
+                brief, usage = COMMANDS[cmd]
+                lines.append(
+                    f"    {C.wrap(f'{cmd:14s}', C.BOLD, C.GREEN)}"
+                    f" {brief}  {C.wrap(usage, C.GRAY)}"
+                )
     lines.append("")
     lines.append(
-        C.wrap("  典型流程:", C.BOLD, C.CYAN)
-        + "\n"
-        + C.wrap("    problem <问题文本>  →  show evidence  →  run  →  show judgment", C.GRAY)
+        C.wrap("  典型迭代流程:", C.BOLD, C.CYAN) + "\n"
+        + C.wrap("    problem <问题>  →  iter/detect  →  issue/add (手动补充)  →", C.GRAY) + "\n"
+        + C.wrap("    iter/run  →  exp/compare  →  test/run  →  report", C.GRAY)
     )
     return "\n".join(lines)
 
@@ -774,6 +801,244 @@ def cmd_clear(state: LoopState, args: List[str]) -> Optional[str]:
     return C.wrap("  ✓ 已清空中间结果（问题和配置保留）", C.GREEN)
 
 
+# ========================================================================
+#  —— 迭代开发命令 ——
+# ========================================================================
+
+def _get_iteration() -> Any:
+    """Lazy-load iteration 模块。"""
+    global _iteration_mod
+    if _iteration_mod is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "iteration", os.path.join(THIS_DIR, "iteration.py")
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _iteration_mod = mod
+    return _iteration_mod
+
+
+def cmd_iter_detect(state: LoopState, args: List[str]) -> Optional[str]:
+    """iter/detect —— 自动检测系统问题"""
+    it = _get_iteration()
+    auto_results = it.AutoDetector.detect()
+    lines = [
+        C.wrap("  ── 自动问题检测 ──", C.BOLD, C.CYAN),
+        f"  共发现 {len(auto_results)} 个潜在问题",
+        "",
+    ]
+    if not auto_results:
+        lines.append("  ✅ 未检测到已知问题模式")
+        return "\n".join(lines)
+    for r in auto_results:
+        lines.append(
+            f"  [{C.wrap(r['priority'], C.BOLD)}] "
+            f"[{r['category']:10s}] {r['description']}"
+        )
+        if r.get("details"):
+            lines.append(f"         详情: {str(r['details'])[:100]}")
+    return "\n".join(lines)
+
+
+def cmd_iter_run(state: LoopState, args: List[str]) -> Optional[str]:
+    """iter/run —— 执行完整迭代（检测 → 修复 → 实验 → 报告）"""
+    it_mod = _get_iteration()
+
+    problem = state.problem or "通用问题测试"
+    session = it_mod.IterSession(problem=problem, version=args[0] if args else "v0.1")
+
+    lines = [C.wrap("  ── 迭代执行 ──", C.BOLD, C.CYAN)]
+
+    # 步骤 1: 检测
+    print(C.wrap("  ▶ [1/4] 自动问题检测...", C.YELLOW), flush=True)
+    detected = session.detect_issues()
+    lines.append(f"  检测完成: 发现 {len(detected)} 个问题")
+    if detected:
+        for d in detected[:3]:
+            lines.append(f"    - [{d['issue'].priority}] {d['issue'].title[:80]}")
+        if len(detected) > 3:
+            lines.append(f"    ... 还有 {len(detected) - 3} 个")
+
+    # 步骤 2: 运行实验
+    print(C.wrap("  ▶ [2/4] 运行实验...", C.YELLOW), flush=True)
+    exp = session.run_experiment(
+        config_overrides={"rounds": state.cfg.rounds, "max_evidence": state.cfg.max_evidence},
+        notes=f"迭代 {args[0] if args else 'v0.1'} 实验",
+    )
+    lines.append(f"  实验完成: run_id={exp.run_id}")
+    lines.append(f"    胜者={exp.metrics.get('winner', '?')} | "
+                 f"正方={exp.metrics.get('pro_score', 0)} / "
+                 f"反方={exp.metrics.get('con_score', 0)}")
+
+    # 步骤 3: 执行迭代
+    print(C.wrap("  ▶ [3/4] 执行迭代记录...", C.YELLOW), flush=True)
+    result = session.iterate(notes=",".join(args) if args else "")
+    lines.append(f"  迭代完成: {result['version']}")
+    lines.append(f"    本轮发现: {result['issues_found_this_iter']} | "
+                 f"本轮修复: {result['issues_fixed_this_iter']}")
+
+    # 步骤 4: 生成报告
+    print(C.wrap("  ▶ [4/4] 生成报告...", C.YELLOW), flush=True)
+    report = session.report()
+    lines.extend(["", C.wrap(report, C.GRAY)])
+    return "\n".join(lines)
+
+
+def cmd_issue_list(state: LoopState, args: List[str]) -> Optional[str]:
+    """issue/list —— 列出所有问题"""
+    it = _get_iteration()
+    tracker = it.IssueTracker()
+
+    category = None
+    priority = None
+    status = None
+    for a in args:
+        a = a.lower()
+        if a in ("design", "logic", "code", "theory", "tech", "capability"):
+            category = a
+        elif a.startswith("p") and len(a) == 2:
+            priority = a.upper()
+        elif a in ("open", "fixed", "in_progress", "wont_fix"):
+            status = a
+
+    issues = tracker.list(category=category, priority=priority, status=status)
+    stats = tracker.stats()
+
+    lines = [
+        C.wrap("  ── 问题列表 ──", C.BOLD, C.CYAN),
+        f"  显示 {len(issues)} / {stats['total']} 条",
+        f"  开放: {stats.get('open', 0)} | 修复中: {stats.get('in_progress', 0)} | 已修复: {stats.get('fixed', 0)}",
+        "",
+    ]
+    lines.append(tracker.render_text(issues))
+    return "\n".join(lines)
+
+
+def cmd_issue_add(state: LoopState, args: List[str]) -> Optional[str]:
+    """issue/add <title> <category> [priority] —— 添加问题"""
+    it = _get_iteration()
+    if len(args) < 2:
+        return C.wrap("  用法: issue/add <标题> <类别> [优先级]。\n"
+                       "  类别: design/logic/code/theory/tech/capability\n"
+                       "  优先级: P0/P1/P2/P3（默认 P1）", C.YELLOW)
+    title = args[0]
+    category = args[1].lower()
+    priority = args[2].upper() if len(args) > 2 else "P1"
+
+    tracker = it.IssueTracker()
+    issue = tracker.add(title=title, category=category, priority=priority,
+                        discovered_in="manual")
+    return (C.wrap(f"  ✓ 已添加问题 [{issue.id}] ", C.GREEN) +
+            f"({issue.priority}, {issue.category})\n"
+            f"    {issue.title}")
+
+
+def cmd_issue_fix(state: LoopState, args: List[str]) -> Optional[str]:
+    """issue/fix <issue_id> —— 将问题标记为已修复"""
+    it = _get_iteration()
+    if not args:
+        return C.wrap("  用法: issue/fix <issue_id>", C.YELLOW)
+    tracker = it.IssueTracker()
+    issue = tracker.update(args[0], status="fixed")
+    if issue:
+        return C.wrap(f"  ✓ 已将 [{issue.id}] 标记为 fixed", C.GREEN)
+    return C.wrap(f"  未找到问题 [{args[0]}]", C.RED)
+
+
+def cmd_issue_stats(state: LoopState, args: List[str]) -> Optional[str]:
+    """issue/stats —— 显示问题统计"""
+    it = _get_iteration()
+    tracker = it.IssueTracker()
+    stats = tracker.stats()
+    lines = [
+        C.wrap("  ── 问题统计 ──", C.BOLD, C.CYAN),
+        f"  总计: {stats['total']}",
+        f"  开放: {stats.get('open', 0)} | 修复中: {stats.get('in_progress', 0)} | 已修复: {stats.get('fixed', 0)}",
+        "",
+        C.wrap("  按类别:", C.GRAY),
+    ]
+    for cat, cnt in stats.get("by_category", {}).items():
+        lines.append(f"    {cat:14s}: {cnt}")
+    lines.extend(["", C.wrap("  按优先级:", C.GRAY)])
+    for pri, cnt in stats.get("by_priority", {}).items():
+        icon = {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🟢"}.get(pri, "⚪")
+        lines.append(f"    {icon} {pri}: {cnt}")
+    return "\n".join(lines)
+
+
+def cmd_exp_run(state: LoopState, args: List[str]) -> Optional[str]:
+    """exp/run [notes] —— 运行一次实验并记录"""
+    it_mod = _get_iteration()
+    problem = state.problem or "实验测试问题"
+    session = it_mod.IterSession(problem=problem)
+    exp = session.run_experiment(
+        config_overrides={"rounds": state.cfg.rounds,
+                          "max_evidence": state.cfg.max_evidence},
+        notes=" ".join(args) if args else "",
+    )
+    lines = [
+        C.wrap("  ── 实验记录 ──", C.BOLD, C.CYAN),
+        f"  exp_id: {exp.exp_id}",
+        f"  run_id: {exp.run_id}",
+        f"  问题: {problem[:60]}",
+        "",
+        f"  指标:",
+    ]
+    for k, v in exp.metrics.items():
+        lines.append(f"    {k:16s}: {v}")
+    return "\n".join(lines)
+
+
+def cmd_exp_compare(state: LoopState, args: List[str]) -> Optional[str]:
+    """exp/compare <exp_id_a> <exp_id_b> —— 对比两次实验"""
+    it_mod = _get_iteration()
+    if len(args) < 2:
+        return C.wrap("  用法: exp/compare <exp_id_a> <exp_id_b>\n"
+                       "  用 `history` 或 `exp/list` 查看 exp_id。", C.YELLOW)
+    et = it_mod.ExperimentTracker()
+    records, err = et.compare(args)
+    if err:
+        return C.wrap(f"  {err}", C.RED)
+    a, b = records
+    lines = [
+        C.wrap(f"  ── 实验对比 {a.exp_id} vs {b.exp_id} ──", C.BOLD, C.CYAN),
+        f"  config_a: {json.dumps(a.config, ensure_ascii=False)[:80]}",
+        f"  config_b: {json.dumps(b.config, ensure_ascii=False)[:80]}",
+        "",
+        f"  {'指标':20s} {'A':>12s}   {'B':>12s}   Δ",
+        f"  {'─'*20} {'─'*12}   {'─'*12}   {'─'*8}",
+    ]
+    all_keys = set(a.metrics) | set(b.metrics)
+    for k in sorted(all_keys):
+        va = a.metrics.get(k, "N/A")
+        vb = b.metrics.get(k, "N/A")
+        try:
+            delta = float(vb) - float(va)
+            sign = "+" if delta > 0 else ""
+            lines.append(f"  {k:20s} {va:>12}   {vb:>12}   {sign}{delta:.3f}")
+        except (TypeError, ValueError):
+            lines.append(f"  {k:20s} {str(va):>12}   {str(vb):>12}   -")
+    return "\n".join(lines)
+
+
+def cmd_test_run(state: LoopState, args: List[str]) -> Optional[str]:
+    """test/run —— 运行回归测试套件"""
+    it_mod = _get_iteration()
+    suite = it_mod.build_default_suite()
+    passed, failed, details = suite.run()
+    text = suite.render_text(passed, failed, details)
+    return C.wrap(text, C.GREEN if failed == 0 else C.YELLOW)
+
+
+def cmd_report(state: LoopState, args: List[str]) -> Optional[str]:
+    """report —— 生成迭代状态报告"""
+    it_mod = _get_iteration()
+    problem = state.problem or "通用问题测试"
+    session = it_mod.IterSession(problem=problem)
+    return session.report()
+
+
 def cmd_quit(state: LoopState, args: List[str]) -> Optional[str]:
     return "__QUIT__"
 
@@ -794,6 +1059,17 @@ HANDLERS: Dict[str, Command] = {
     "clear": cmd_clear,
     "quit": cmd_quit,
     "exit": cmd_quit,
+    # 迭代命令（前缀形式）
+    "iter/detect": cmd_iter_detect,
+    "iter/run": cmd_iter_run,
+    "issue/list": cmd_issue_list,
+    "issue/stats": cmd_issue_stats,
+    "issue/add": cmd_issue_add,
+    "issue/fix": cmd_issue_fix,
+    "exp/run": cmd_exp_run,
+    "exp/compare": cmd_exp_compare,
+    "test/run": cmd_test_run,
+    "report": cmd_report,
 }
 
 
@@ -802,7 +1078,10 @@ HANDLERS: Dict[str, Command] = {
 # ========================================================================
 
 def parse_command(line: str) -> Tuple[str, List[str]]:
-    """`set rounds 3` → ('set', ['rounds', '3'])。空行 → ('', [])。"""
+    """`set rounds 3` → ('set', ['rounds', '3'])
+    `iter/detect` → ('iter/detect', [])
+    空行 → ('', [])
+    """
     tokens = line.strip().split()
     if not tokens:
         return "", []
