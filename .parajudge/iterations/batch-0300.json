@@ -1,0 +1,14 @@
+{
+  "batch": 3,
+  "round_start": 201,
+  "round_end": 300,
+  "avg_time_ms": 870.5,
+  "total_time_sec": 273.8,
+  "disk_kb": 187.1,
+  "memory_mb": 43.0,
+  "winner_distribution": {
+    "tie": 100
+  },
+  "total_experiments_logged": 300,
+  "failed_rounds": 0
+}
