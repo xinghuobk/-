@@ -1,0 +1,25 @@
+# ===== 实验环境专用 =====
+# 仅在需要实验/交互式分析时安装
+
+# Jupyter 交互式环境
+jupyter>=1.1.0
+jupyterlab>=4.3.0
+ipykernel>=6.29.0
+ipywidgets>=8.1.0
+nbformat>=5.10.0
+
+# 高质量 PDF 解析（体积较大，按需安装）
+# marker>=1.0.0          # vikhyat/marker: PDF → Markdown，离线模型
+# nougat-ocr>=0.3.0      # facebookresearch/nougat: 学术 PDF → Markdown
+
+# 数据科学与可视化
+pandas>=2.2.0
+scipy>=1.13.0
+seaborn>=0.13.0
+plotly>=5.22.0
+jupyter-contrib-nbextensions>=0.7.0
+
+# 代码质量工具
+black>=24.8.0
+ruff>=0.6.0
+mypy>=1.11.0

@@ -1,0 +1,315 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "fever",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 50,
+  "schema": [
+    "claim_id",
+    "claim",
+    "evidence",
+    "label"
+  ],
+  "samples": [
+    {
+      "claim_id": "fever-0000",
+      "claim": "sample claim 0",
+      "evidence": "sample evidence sentence 0",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0001",
+      "claim": "sample claim 1",
+      "evidence": "sample evidence sentence 1",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0002",
+      "claim": "sample claim 2",
+      "evidence": "sample evidence sentence 2",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0003",
+      "claim": "sample claim 3",
+      "evidence": "sample evidence sentence 3",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0004",
+      "claim": "sample claim 4",
+      "evidence": "sample evidence sentence 4",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0005",
+      "claim": "sample claim 5",
+      "evidence": "sample evidence sentence 5",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0006",
+      "claim": "sample claim 6",
+      "evidence": "sample evidence sentence 6",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0007",
+      "claim": "sample claim 7",
+      "evidence": "sample evidence sentence 7",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0008",
+      "claim": "sample claim 8",
+      "evidence": "sample evidence sentence 8",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0009",
+      "claim": "sample claim 9",
+      "evidence": "sample evidence sentence 9",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0010",
+      "claim": "sample claim 10",
+      "evidence": "sample evidence sentence 10",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0011",
+      "claim": "sample claim 11",
+      "evidence": "sample evidence sentence 11",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0012",
+      "claim": "sample claim 12",
+      "evidence": "sample evidence sentence 12",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0013",
+      "claim": "sample claim 13",
+      "evidence": "sample evidence sentence 13",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0014",
+      "claim": "sample claim 14",
+      "evidence": "sample evidence sentence 14",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0015",
+      "claim": "sample claim 15",
+      "evidence": "sample evidence sentence 15",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0016",
+      "claim": "sample claim 16",
+      "evidence": "sample evidence sentence 16",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0017",
+      "claim": "sample claim 17",
+      "evidence": "sample evidence sentence 17",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0018",
+      "claim": "sample claim 18",
+      "evidence": "sample evidence sentence 18",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0019",
+      "claim": "sample claim 19",
+      "evidence": "sample evidence sentence 19",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0020",
+      "claim": "sample claim 20",
+      "evidence": "sample evidence sentence 20",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0021",
+      "claim": "sample claim 21",
+      "evidence": "sample evidence sentence 21",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0022",
+      "claim": "sample claim 22",
+      "evidence": "sample evidence sentence 22",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0023",
+      "claim": "sample claim 23",
+      "evidence": "sample evidence sentence 23",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0024",
+      "claim": "sample claim 24",
+      "evidence": "sample evidence sentence 24",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0025",
+      "claim": "sample claim 25",
+      "evidence": "sample evidence sentence 25",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0026",
+      "claim": "sample claim 26",
+      "evidence": "sample evidence sentence 26",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0027",
+      "claim": "sample claim 27",
+      "evidence": "sample evidence sentence 27",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0028",
+      "claim": "sample claim 28",
+      "evidence": "sample evidence sentence 28",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0029",
+      "claim": "sample claim 29",
+      "evidence": "sample evidence sentence 29",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0030",
+      "claim": "sample claim 30",
+      "evidence": "sample evidence sentence 30",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0031",
+      "claim": "sample claim 31",
+      "evidence": "sample evidence sentence 31",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0032",
+      "claim": "sample claim 32",
+      "evidence": "sample evidence sentence 32",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0033",
+      "claim": "sample claim 33",
+      "evidence": "sample evidence sentence 33",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0034",
+      "claim": "sample claim 34",
+      "evidence": "sample evidence sentence 34",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0035",
+      "claim": "sample claim 35",
+      "evidence": "sample evidence sentence 35",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0036",
+      "claim": "sample claim 36",
+      "evidence": "sample evidence sentence 36",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0037",
+      "claim": "sample claim 37",
+      "evidence": "sample evidence sentence 37",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0038",
+      "claim": "sample claim 38",
+      "evidence": "sample evidence sentence 38",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0039",
+      "claim": "sample claim 39",
+      "evidence": "sample evidence sentence 39",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0040",
+      "claim": "sample claim 40",
+      "evidence": "sample evidence sentence 40",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0041",
+      "claim": "sample claim 41",
+      "evidence": "sample evidence sentence 41",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0042",
+      "claim": "sample claim 42",
+      "evidence": "sample evidence sentence 42",
+      "label": "NOT ENOUGH INFO"
+    },
+    {
+      "claim_id": "fever-0043",
+      "claim": "sample claim 43",
+      "evidence": "sample evidence sentence 43",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0044",
+      "claim": "sample claim 44",
+      "evidence": "sample evidence sentence 44",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0045",
+      "claim": "sample claim 45",
+      "evidence": "sample evidence sentence 45",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0046",
+      "claim": "sample claim 46",
+      "evidence": "sample evidence sentence 46",
+      "label": "SUPPORTS"
+    },
+    {
+      "claim_id": "fever-0047",
+      "claim": "sample claim 47",
+      "evidence": "sample evidence sentence 47",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0048",
+      "claim": "sample claim 48",
+      "evidence": "sample evidence sentence 48",
+      "label": "REFUTES"
+    },
+    {
+      "claim_id": "fever-0049",
+      "claim": "sample claim 49",
+      "evidence": "sample evidence sentence 49",
+      "label": "SUPPORTS"
+    }
+  ]
+}

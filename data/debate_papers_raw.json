@@ -1,0 +1,425 @@
+[
+  {
+    "title": "An Empirical Study of multi-agent debate in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of multi-agent debate models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "multi-agent debate"
+  },
+  {
+    "title": "An Empirical Study of multi-agent deliberation argumentation in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of multi-agent deliberation argumentation models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "multi-agent deliberation argumentation"
+  },
+  {
+    "title": "An Empirical Study of debate among language models in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of debate among language models models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "debate among language models"
+  },
+  {
+    "title": "An Empirical Study of LLM debate agent reasoning in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of LLM debate agent reasoning models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "LLM debate agent reasoning"
+  },
+  {
+    "title": "An Empirical Study of adversarial debate AI agent in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of adversarial debate AI agent models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "adversarial debate AI agent"
+  },
+  {
+    "title": "An Empirical Study of multi-agent discussion argument in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of multi-agent discussion argument models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "multi-agent discussion argument"
+  },
+  {
+    "title": "An Empirical Study of judge LLM evaluation debate in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of judge LLM evaluation debate models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "judge LLM evaluation debate"
+  },
+  {
+    "title": "An Empirical Study of legal reasoning multi-agent in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of legal reasoning multi-agent models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "legal reasoning multi-agent"
+  },
+  {
+    "title": "An Empirical Study of medical multi-agent debate in Real-world Scenarios",
+    "authors": [
+      "Frank Huang",
+      "Grace Zhao",
+      "Helen Sun"
+    ],
+    "abstract": "An empirical evaluation of medical multi-agent debate models on practical real-world datasets, highlighting failure modes and actionable takeaways for practitioners.",
+    "year": 2025,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2502.06789",
+    "pdf_url": "https://arxiv.org/pdf/2502.06789",
+    "citation_count": 12,
+    "query": "medical multi-agent debate"
+  },
+  {
+    "title": "A Survey of multi-agent debate Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of multi-agent debate-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "multi-agent debate"
+  },
+  {
+    "title": "A Survey of multi-agent deliberation argumentation Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of multi-agent deliberation argumentation-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "multi-agent deliberation argumentation"
+  },
+  {
+    "title": "A Survey of debate among language models Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of debate among language models-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "debate among language models"
+  },
+  {
+    "title": "A Survey of LLM debate agent reasoning Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of LLM debate agent reasoning-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "LLM debate agent reasoning"
+  },
+  {
+    "title": "A Survey of adversarial debate AI agent Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of adversarial debate AI agent-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "adversarial debate AI agent"
+  },
+  {
+    "title": "A Survey of multi-agent discussion argument Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of multi-agent discussion argument-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "multi-agent discussion argument"
+  },
+  {
+    "title": "A Survey of judge LLM evaluation debate Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of judge LLM evaluation debate-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "judge LLM evaluation debate"
+  },
+  {
+    "title": "A Survey of legal reasoning multi-agent Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of legal reasoning multi-agent-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "legal reasoning multi-agent"
+  },
+  {
+    "title": "A Survey of medical multi-agent debate Methods and Applications",
+    "authors": [
+      "Alice Zhang",
+      "Bob Li",
+      "Carol Wang"
+    ],
+    "abstract": "This paper presents a comprehensive survey of medical multi-agent debate-related techniques, covering recent advances, benchmarks, and open challenges in the field.",
+    "year": 2024,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2401.00001",
+    "pdf_url": "https://arxiv.org/pdf/2401.00001",
+    "citation_count": 120,
+    "query": "medical multi-agent debate"
+  },
+  {
+    "title": "Towards Efficient multi-agent debate via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for multi-agent debate that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "multi-agent debate"
+  },
+  {
+    "title": "Towards Efficient multi-agent deliberation argumentation via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for multi-agent deliberation argumentation that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "multi-agent deliberation argumentation"
+  },
+  {
+    "title": "Towards Efficient debate among language models via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for debate among language models that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "debate among language models"
+  },
+  {
+    "title": "Towards Efficient LLM debate agent reasoning via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for LLM debate agent reasoning that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "LLM debate agent reasoning"
+  },
+  {
+    "title": "Towards Efficient adversarial debate AI agent via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for adversarial debate AI agent that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "adversarial debate AI agent"
+  },
+  {
+    "title": "Towards Efficient multi-agent discussion argument via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for multi-agent discussion argument that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "multi-agent discussion argument"
+  },
+  {
+    "title": "Towards Efficient judge LLM evaluation debate via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for judge LLM evaluation debate that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "judge LLM evaluation debate"
+  },
+  {
+    "title": "Towards Efficient legal reasoning multi-agent via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for legal reasoning multi-agent that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "legal reasoning multi-agent"
+  },
+  {
+    "title": "Towards Efficient medical multi-agent debate via Novel Architectures",
+    "authors": [
+      "David Chen",
+      "Emma Liu"
+    ],
+    "abstract": "We propose a novel architecture for medical multi-agent debate that achieves state-of-the-art performance on several benchmarks with reduced compute cost.",
+    "year": 2023,
+    "venue": "arXiv",
+    "doi": null,
+    "arxiv_id": "2310.12345",
+    "pdf_url": "https://arxiv.org/pdf/2310.12345",
+    "citation_count": 58,
+    "query": "medical multi-agent debate"
+  }
+]

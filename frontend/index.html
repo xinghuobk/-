@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParaJudge - AI 多智能体辩论评估系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Hero 区 */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 40px 0 20px;
+        }
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            animation: scaleIn 0.8s var(--ease-spring) both;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(183, 148, 244, 0.12);
+            border: 1px solid rgba(183, 148, 244, 0.3);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: var(--neon-purple);
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            animation: pulse-glow 2s infinite;
+        }
+        .hero-title {
+            font-family: var(--font-en);
+            font-size: 68px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+        .hero-title .line1 {
+            background: linear-gradient(135deg, #f0f2ff 0%, #b794f4 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+        .hero-title .line2 {
+            background: linear-gradient(135deg, #ff4d6d, #ffd166);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            font-size: 48px;
+            margin-top: 8px;
+        }
+        .hero-sub {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 620px;
+            margin: 0 auto 40px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+        .btn-primary {
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #5b4fcf, #b794f4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: var(--font-jp);
+            cursor: pointer;
+            transition: all var(--duration-med) var(--ease-spring);
+            box-shadow: 0 6px 20px rgba(91, 79, 207, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.5);
+        }
+        .btn-secondary {
+            padding: 14px 36px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: var(--font-jp);
+            cursor: pointer;
+            transition: all var(--duration-med) var(--ease-spring);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            border-color: var(--neon-purple);
+        }
+
+        /* 统计数据 */
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-num {
+            font-family: var(--font-en);
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b794f4, #00d4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* 功能卡片区 */
+        .features {
+            padding: 60px 0;
+        }
+        .section-title {
+            text-align: center;
+            font-family: var(--font-en);
+            font-size: 14px;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+        .section-subtitle {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 50px;
+            line-height: 1.4;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all var(--duration-med) var(--ease-spring);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s var(--ease-spring) both;
+        }
+        .feature-card:nth-child(2) { animation-delay: 0.1s; }
+        .feature-card:nth-child(3) { animation-delay: 0.2s; }
+        .feature-card:nth-child(4) { animation-delay: 0.3s; }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, transparent);
+            transition: background var(--duration-med);
+        }
+        .feature-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+            background: var(--bg-card);
+        }
+        .feature-card:hover::before {
+            background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+        }
+        .feature-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        .feature-icon.blue {
+            background: rgba(0, 212, 255, 0.12);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--neon-pro);
+        }
+        .feature-icon.pink {
+            background: rgba(255, 77, 109, 0.12);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            color: var(--neon-con);
+        }
+        .feature-icon.gold {
+            background: rgba(255, 209, 102, 0.12);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+            color: var(--neon-gold);
+        }
+        .feature-icon.purple {
+            background: rgba(183, 148, 244, 0.12);
+            border: 1px solid rgba(183, 148, 244, 0.3);
+            color: var(--neon-purple);
+        }
+        .feature-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .feature-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* 流程说明 */
+        .flow-section {
+            padding: 60px 0;
+        }
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+        }
+        .flow-step {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            transition: all var(--duration-med) var(--ease-spring);
+        }
+        .flow-step:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+        }
+        .flow-num {
+            display: inline-block;
+            width: 40px; height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5b4fcf, #b794f4);
+            color: white;
+            font-family: var(--font-en);
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .flow-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .flow-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 问题库快速入口 */
+        .question-section { padding: 50px 0; }
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 14px;
+            margin-top: 30px;
+        }
+        .question-item {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-smooth);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .question-item:hover {
+            border-color: var(--border-glow);
+            background: var(--bg-card);
+            transform: translateX(4px);
+        }
+        .question-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .question-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            flex: 1;
+        }
+        .question-arrow {
+            color: var(--neon-purple);
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: all var(--duration-fast);
+            font-size: 18px;
+        }
+        .question-item:hover .question-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 30px 0 20px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 44px; }
+            .hero-title .line2 { font-size: 30px; }
+            .hero-sub { font-size: 15px; }
+            .hero-stats { gap: 24px; }
+            .stat-num { font-size: 28px; }
+            .hero-actions { flex-direction: column; width: 100%; }
+            .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+            .section-subtitle { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-ambient">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <div class="page-container">
+        <!-- 顶部导航 -->
+        <nav class="topbar">
+            <a href="index.html" class="topbar-logo">
+                <div class="logo-icon">⚖️</div>
+                <span class="logo-text">ParaJudge</span>
+                <span class="logo-version">v0.1.0</span>
+            </a>
+            <div class="nav-btns">
+                <a href="index.html" class="nav-btn active">首页</a>
+                <a href="debate-room.html" class="nav-btn">辩论室</a>
+                <a href="verdict-report.html" class="nav-btn">裁决书</a>
+                <a href="debate-room.html" class="nav-btn primary">⚡ 发起辩论</a>
+            </div>
+        </nav>
+
+        <!-- Hero 主视觉 -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="dot"></span>
+                    AI × DEBATE × JUDGMENT
+                </div>
+
+                <h1 class="hero-title">
+                    <span class="line1">多智能体辩论</span>
+                    <span class="line2">让 AI 帮你决策科研问题</span>
+                </h1>
+
+                <p class="hero-sub">
+                    两位 AI 辩手基于真实学术文献进行立场对抗，
+                    五位独立法官进行交叉评分与裁决，
+                    输出结构化的推理链与裁决书，
+                    帮你在复杂问题上快速形成科学判断。
+                </p>
+
+                <div class="hero-actions">
+                    <button class="btn-primary" onclick="location.href='debate-room.html'">
+                        🚀 立即体验
+                    </button>
+                    <button class="btn-secondary" onclick="location.href='#features'">
+                        了解系统
+                    </button>
+                </div>
+
+                <!-- 核心统计 -->
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-num">5</div>
+                        <div class="stat-label">独立法官</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">20+</div>
+                        <div class="stat-label">文献证据</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">3轮</div>
+                        <div class="stat-label">辩论回合</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">4</div>
+                        <div class="stat-label">评估阶段</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 功能卡片 -->
+        <section class="features" id="features">
+            <div class="section-title">CORE FEATURES</div>
+            <h2 class="section-subtitle">四大核心功能，端到端辩论裁决</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon blue">📚</div>
+                    <h3 class="feature-title">证据自动构建</h3>
+                    <p class="feature-desc">基于问题关键词，从 arXiv、CrossRef、Semantic Scholar 等多源自动检索相关论文，构建可引用的证据包。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon pink">🎤</div>
+                    <h3 class="feature-title">双立场辩论</h3>
+                    <p class="feature-desc">两位 AI 辩手分别从正反立场发言，每轮基于对方论点进行针对性反驳，形成完整辩论记录。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon gold">🔍</div>
+                    <h3 class="feature-title">程序化审理</h3>
+                    <p class="feature-desc">检查引用有效性、证据支持力度、循环论证等常见问题，输出结构化审理报告，防止劣质论点通过。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon purple">⚖️</div>
+                    <h3 class="feature-title">多法官裁决</h3>
+                    <p class="feature-desc">五位不同视角的 AI 法官（证据法/逻辑/原则/案例/创新）独立评分，生成可追溯的推理链与最终裁决。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 流程说明 -->
+        <section class="flow-section">
+            <div class="section-title">WORKFLOW</div>
+            <h2 class="section-subtitle">四阶段辩论裁决流程</h2>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-num">0</div>
+                    <div class="flow-title">Phase 0 · 证据构建</div>
+                    <div class="flow-sub">从问题关键词到结构化证据包</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">1</div>
+                    <div class="flow-title">Phase 1 · 正反辩论</div>
+                    <div class="flow-sub">两位辩手多轮立场对抗发言</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">2</div>
+                    <div class="flow-title">Phase 2.1 · 审理审查</div>
+                    <div class="flow-sub">程序化检查与质量评估</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">3</div>
+                    <div class="flow-title">Phase 2.2 · 裁决判定</div>
+                    <div class="flow-sub">五法官独立评分输出裁决书</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 问题库 -->
+        <section class="question-section">
+            <div class="section-title">TRY IT</div>
+            <h2 class="section-subtitle">试试这些问题，一键发起辩论</h2>
+            <div class="question-grid">
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">🤖</span>
+                    <span class="question-text">LLM 是否会取代人类大部分工作？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">🔬</span>
+                    <span class="question-text">Transformer 架构是否会被新模型取代？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">⚛️</span>
+                    <span class="question-text">量子计算能否在 10 年内实现商业化？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">🧬</span>
+                    <span class="question-text">AGI 是否会在 2030 年前实现？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">💡</span>
+                    <span class="question-text">AI 科研是否降低了学术创新的门槛？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+                <div class="question-item" onclick="gotoDebate(this)">
+                    <span class="question-icon">🧠</span>
+                    <span class="question-text">大模型是否真正理解语言，还是仅是统计拟合？</span>
+                    <span class="question-arrow">→</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            ParaJudge · AI 多智能体辩论评估系统 · Made with Design A (Soft Neon)
+        </div>
+    </div>
+
+    <script src="js/desktop-bridge.js"></script>
+    <script>
+        function gotoDebate(el) {
+            const text = el.querySelector('.question-text').textContent;
+            location.href = 'debate-room.html?q=' + encodeURIComponent(text);
+        }
+    </script>
+</body>
+</html>

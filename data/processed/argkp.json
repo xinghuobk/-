@@ -1,0 +1,195 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "argkp",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 30,
+  "schema": [
+    "argument_id",
+    "topic",
+    "key_point",
+    "stance"
+  ],
+  "samples": [
+    {
+      "argument_id": "argkp-0000",
+      "topic": "sample topic 0",
+      "key_point": "sample key point 0",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0001",
+      "topic": "sample topic 1",
+      "key_point": "sample key point 1",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0002",
+      "topic": "sample topic 2",
+      "key_point": "sample key point 2",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0003",
+      "topic": "sample topic 3",
+      "key_point": "sample key point 3",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0004",
+      "topic": "sample topic 4",
+      "key_point": "sample key point 4",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0005",
+      "topic": "sample topic 5",
+      "key_point": "sample key point 5",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0006",
+      "topic": "sample topic 6",
+      "key_point": "sample key point 6",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0007",
+      "topic": "sample topic 7",
+      "key_point": "sample key point 7",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0008",
+      "topic": "sample topic 8",
+      "key_point": "sample key point 8",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0009",
+      "topic": "sample topic 9",
+      "key_point": "sample key point 9",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0010",
+      "topic": "sample topic 10",
+      "key_point": "sample key point 10",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0011",
+      "topic": "sample topic 11",
+      "key_point": "sample key point 11",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0012",
+      "topic": "sample topic 12",
+      "key_point": "sample key point 12",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0013",
+      "topic": "sample topic 13",
+      "key_point": "sample key point 13",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0014",
+      "topic": "sample topic 14",
+      "key_point": "sample key point 14",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0015",
+      "topic": "sample topic 15",
+      "key_point": "sample key point 15",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0016",
+      "topic": "sample topic 16",
+      "key_point": "sample key point 16",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0017",
+      "topic": "sample topic 17",
+      "key_point": "sample key point 17",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0018",
+      "topic": "sample topic 18",
+      "key_point": "sample key point 18",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0019",
+      "topic": "sample topic 19",
+      "key_point": "sample key point 19",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0020",
+      "topic": "sample topic 20",
+      "key_point": "sample key point 20",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0021",
+      "topic": "sample topic 21",
+      "key_point": "sample key point 21",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0022",
+      "topic": "sample topic 22",
+      "key_point": "sample key point 22",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0023",
+      "topic": "sample topic 23",
+      "key_point": "sample key point 23",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0024",
+      "topic": "sample topic 24",
+      "key_point": "sample key point 24",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0025",
+      "topic": "sample topic 25",
+      "key_point": "sample key point 25",
+      "stance": "PRO"
+    },
+    {
+      "argument_id": "argkp-0026",
+      "topic": "sample topic 26",
+      "key_point": "sample key point 26",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0027",
+      "topic": "sample topic 27",
+      "key_point": "sample key point 27",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0028",
+      "topic": "sample topic 28",
+      "key_point": "sample key point 28",
+      "stance": "CON"
+    },
+    {
+      "argument_id": "argkp-0029",
+      "topic": "sample topic 29",
+      "key_point": "sample key point 29",
+      "stance": "PRO"
+    }
+  ]
+}

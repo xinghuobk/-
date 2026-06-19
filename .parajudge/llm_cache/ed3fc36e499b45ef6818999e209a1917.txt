@@ -1,0 +1,1 @@
+上一轮实验平局率偏高（3/3 tie），judge 一致性不足。建议：①给 judge panel 增加 diversity prompt；②降低 DS 正交和近似的冲突阈值；③反驳覆盖率阈值改为可调参数。

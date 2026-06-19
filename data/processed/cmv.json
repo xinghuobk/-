@@ -1,0 +1,240 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "cmv",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 15,
+  "n_long": 10,
+  "n_short": 5,
+  "schema": [
+    "thread_id",
+    "op_post",
+    "replies",
+    "n_replies",
+    "is_long"
+  ],
+  "samples": [
+    {
+      "thread_id": "cmv-0000",
+      "op_post": "sample original post 0",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4"
+      ],
+      "n_replies": 5,
+      "is_long": false
+    },
+    {
+      "thread_id": "cmv-0001",
+      "op_post": "sample original post 1",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6"
+      ],
+      "n_replies": 7,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0002",
+      "op_post": "sample original post 2",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5"
+      ],
+      "n_replies": 6,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0003",
+      "op_post": "sample original post 3",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6",
+        "reply text 7",
+        "reply text 8",
+        "reply text 9",
+        "reply text 10"
+      ],
+      "n_replies": 11,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0004",
+      "op_post": "sample original post 4",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5"
+      ],
+      "n_replies": 6,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0005",
+      "op_post": "sample original post 5",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6",
+        "reply text 7",
+        "reply text 8",
+        "reply text 9",
+        "reply text 10"
+      ],
+      "n_replies": 11,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0006",
+      "op_post": "sample original post 6",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4"
+      ],
+      "n_replies": 5,
+      "is_long": false
+    },
+    {
+      "thread_id": "cmv-0007",
+      "op_post": "sample original post 7",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6",
+        "reply text 7",
+        "reply text 8"
+      ],
+      "n_replies": 9,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0008",
+      "op_post": "sample original post 8",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5"
+      ],
+      "n_replies": 6,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0009",
+      "op_post": "sample original post 9",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6",
+        "reply text 7",
+        "reply text 8",
+        "reply text 9"
+      ],
+      "n_replies": 10,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0010",
+      "op_post": "sample original post 10",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2"
+      ],
+      "n_replies": 3,
+      "is_long": false
+    },
+    {
+      "thread_id": "cmv-0011",
+      "op_post": "sample original post 11",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6",
+        "reply text 7",
+        "reply text 8",
+        "reply text 9"
+      ],
+      "n_replies": 10,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0012",
+      "op_post": "sample original post 12",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2"
+      ],
+      "n_replies": 3,
+      "is_long": false
+    },
+    {
+      "thread_id": "cmv-0013",
+      "op_post": "sample original post 13",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2",
+        "reply text 3",
+        "reply text 4",
+        "reply text 5",
+        "reply text 6"
+      ],
+      "n_replies": 7,
+      "is_long": true
+    },
+    {
+      "thread_id": "cmv-0014",
+      "op_post": "sample original post 14",
+      "replies": [
+        "reply text 0",
+        "reply text 1",
+        "reply text 2"
+      ],
+      "n_replies": 3,
+      "is_long": false
+    }
+  ]
+}

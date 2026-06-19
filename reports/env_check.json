@@ -1,0 +1,110 @@
+{
+  "checks": [
+    {
+      "name": "python",
+      "status": "PASS",
+      "version": "3.14.4",
+      "required": ">=3.10",
+      "fix": null
+    },
+    {
+      "name": "network",
+      "status": "FAIL",
+      "reachable": [],
+      "required": "huggingface.co + github.com",
+      "fix": "检查网络 / 配置代理 http_proxy / https_proxy"
+    },
+    {
+      "name": "disk",
+      "status": "PASS",
+      "free_gb": 1219.32
+    },
+    {
+      "name": "gpu",
+      "status": "SKIP",
+      "note": "无 nvidia-smi，跳过 GPU 检查"
+    },
+    {
+      "name": "ollama",
+      "status": "WARN",
+      "endpoint": "http://localhost:11434",
+      "note": "Ollama 未运行（可选，仅本地 LLM 需要）",
+      "fix": "ollama serve  # 在另一终端启动；或跳过 --provider openai"
+    },
+    {
+      "name": "openai_key",
+      "status": "WARN",
+      "note": "OPENAI_API_KEY 未设置（仅 OpenAI provider 需要）",
+      "fix": "export OPENAI_API_KEY=sk-..."
+    },
+    {
+      "name": "numpy",
+      "status": "PASS",
+      "version": "2.4.6",
+      "required": ">=1.24"
+    },
+    {
+      "name": "scipy",
+      "status": "PASS",
+      "version": "1.17.1",
+      "required": ">=1.10"
+    },
+    {
+      "name": "pandas",
+      "status": "PASS",
+      "version": "3.0.3",
+      "required": ">=2.0"
+    },
+    {
+      "name": "sklearn",
+      "status": "PASS",
+      "version": "1.9.0",
+      "required": ">=1.3"
+    },
+    {
+      "name": "networkx",
+      "status": "PASS",
+      "version": "3.6.1",
+      "required": ">=3.0"
+    },
+    {
+      "name": "requests",
+      "status": "PASS",
+      "version": "2.34.2",
+      "required": ">=2.28"
+    },
+    {
+      "name": "sentence_transformers",
+      "status": "WARN",
+      "required": ">=2.2",
+      "error": "No module named 'sentence_transformers'",
+      "fix": null
+    },
+    {
+      "name": "torch",
+      "status": "WARN",
+      "required": ">=2.0",
+      "error": "No module named 'torch'",
+      "fix": null
+    },
+    {
+      "name": "huggingface_hub",
+      "status": "PASS",
+      "version": "1.19.0",
+      "required": ">=0.16"
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "summary": {
+      "PASS": 9,
+      "WARN": 4,
+      "FAIL": 1,
+      "SKIP": 1
+    },
+    "can_continue": false,
+    "timestamp": "2026-06-17T05:18:24Z",
+    "platform": "Linux-6.18.5-x86_64-with-glibc2.39",
+    "python": "3.14.4 (main, Apr 17 2026, 10:42:51) [GCC 13.3.0]"
+  }
+}

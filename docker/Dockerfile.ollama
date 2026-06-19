@@ -1,0 +1,44 @@
+# ============================================================
+# ParaJudge v0.3 · Ollama 服务镜像
+# ============================================================
+# 用途：提供本地免费 LLM（qwen2.5:7b）
+# 构建：docker build -t parajudge/ollama:v0.3 -f docker/Dockerfile.ollama docker/
+# 运行：由 docker-compose.yml 自动启动，暴露 11434 端口
+# ============================================================
+
+FROM ubuntu:22.04
+
+LABEL maintainer="parajudge"
+LABEL description="Ollama Local LLM Server with qwen2.5:7b"
+
+# ── 安装 Ollama ────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── 安装 Ollama ────────────────────────────────────────────
+RUN curl -fsSL https://ollama.ai/install.sh | sh
+
+# ── 预先拉取模型（构建时下载，镜像体积会 ~6GB）─────────────
+# 注意：也可以运行时 pull，构建时拉取可节省启动时间
+ARG OLLAMA_MODEL=qwen2.5:7b
+RUN ollama pull ${OLLAMA_MODEL}
+
+# 备选模型（取消注释可同时拉取）
+# RUN ollama pull llama3.1:8b
+# RUN ollama pull deepseek-r1:7b
+
+# ── Ollama 配置 ────────────────────────────────────────────
+ENV OLLAMA_HOST=0.0.0.0
+ENV OLLAMA_PORT=11434
+
+# ── 健康检查 ────────────────────────────────────────────────
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:11434/api/tags > /dev/null 2>&1 || exit 1
+
+# ── 暴露端口 ────────────────────────────────────────────────
+EXPOSE 11434
+
+# ── 启动 Ollama 服务 ────────────────────────────────────────
+CMD ["sh", "-c", "ollama serve"]

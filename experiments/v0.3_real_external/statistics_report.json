@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-06-17T06:06:51Z",
+  "experiments": {
+    "exp1_T1_HITS": {
+      "status": "PENDING_REAL_DATA",
+      "note": "需在真实 IBM-Arg-Quality 上跑 t1_bipartite_hits.py 与 baseline PageRank 对比"
+    },
+    "exp7_T4_Murphy_vs_Dempster": {
+      "status": "OK",
+      "n": 24,
+      "mean_pro": 54.7333,
+      "mean_con": 54.8333,
+      "p_value": 0.781484,
+      "cohens_d": -0.0847,
+      "method": "paired t-test (scipy.stats.ttest_rel)",
+      "conclusion": "不显著"
+    },
+    "exp10_ablation_ANOVA": {
+      "status": "OK",
+      "n_groups": 6,
+      "F_statistic": 0.0014,
+      "p_value": 1.0,
+      "method": "one-way ANOVA (scipy.stats.f_oneway)",
+      "conclusion": "组间差异不显著",
+      "group_means": {
+        "full": -0.1,
+        "no_T1": -0.1,
+        "no_T2": -0.1,
+        "no_T3": -0.1,
+        "no_T4": -0.1,
+        "all_off": -0.0667
+      }
+    }
+  }
+}

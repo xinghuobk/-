@@ -1,0 +1,20 @@
+ParaJudge 环境检查
+2026-06-17T05:18:24Z
+
+python: PASS (3.14.4)
+network: FAIL
+disk: PASS
+gpu: SKIP
+ollama: WARN
+openai_key: WARN
+numpy: PASS (2.4.6)
+scipy: PASS (1.17.1)
+pandas: PASS (3.0.3)
+sklearn: PASS (1.9.0)
+networkx: PASS (3.6.1)
+requests: PASS (2.34.2)
+sentence_transformers: WARN
+torch: WARN
+huggingface_hub: PASS (1.19.0)
+
+汇总: {'PASS': 9, 'WARN': 4, 'FAIL': 1, 'SKIP': 1}

@@ -1,0 +1,346 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "mt_bench",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 30,
+  "schema": [
+    "question_id",
+    "question",
+    "category",
+    "judge_scores",
+    "gpt4_score"
+  ],
+  "samples": [
+    {
+      "question_id": "mt-000",
+      "question": "sample question 0",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 2,
+        "judge_1": 6,
+        "judge_2": 7
+      },
+      "gpt4_score": 6
+    },
+    {
+      "question_id": "mt-001",
+      "question": "sample question 1",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 9,
+        "judge_1": 9,
+        "judge_2": 1
+      },
+      "gpt4_score": 5
+    },
+    {
+      "question_id": "mt-002",
+      "question": "sample question 2",
+      "category": "coding",
+      "judge_scores": {
+        "judge_0": 3,
+        "judge_1": 8,
+        "judge_2": 1
+      },
+      "gpt4_score": 9
+    },
+    {
+      "question_id": "mt-003",
+      "question": "sample question 3",
+      "category": "coding",
+      "judge_scores": {
+        "judge_0": 4,
+        "judge_1": 10,
+        "judge_2": 5
+      },
+      "gpt4_score": 6
+    },
+    {
+      "question_id": "mt-004",
+      "question": "sample question 4",
+      "category": "roleplay",
+      "judge_scores": {
+        "judge_0": 7,
+        "judge_1": 1,
+        "judge_2": 4
+      },
+      "gpt4_score": 2
+    },
+    {
+      "question_id": "mt-005",
+      "question": "sample question 5",
+      "category": "reasoning",
+      "judge_scores": {
+        "judge_0": 7,
+        "judge_1": 7,
+        "judge_2": 6
+      },
+      "gpt4_score": 5
+    },
+    {
+      "question_id": "mt-006",
+      "question": "sample question 6",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 7,
+        "judge_1": 10,
+        "judge_2": 10
+      },
+      "gpt4_score": 7
+    },
+    {
+      "question_id": "mt-007",
+      "question": "sample question 7",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 9,
+        "judge_1": 10,
+        "judge_2": 4
+      },
+      "gpt4_score": 10
+    },
+    {
+      "question_id": "mt-008",
+      "question": "sample question 8",
+      "category": "coding",
+      "judge_scores": {
+        "judge_0": 5,
+        "judge_1": 9,
+        "judge_2": 10
+      },
+      "gpt4_score": 6
+    },
+    {
+      "question_id": "mt-009",
+      "question": "sample question 9",
+      "category": "reasoning",
+      "judge_scores": {
+        "judge_0": 3,
+        "judge_1": 8,
+        "judge_2": 4
+      },
+      "gpt4_score": 5
+    },
+    {
+      "question_id": "mt-010",
+      "question": "sample question 10",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 10,
+        "judge_1": 7,
+        "judge_2": 10
+      },
+      "gpt4_score": 8
+    },
+    {
+      "question_id": "mt-011",
+      "question": "sample question 11",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 7,
+        "judge_1": 5,
+        "judge_2": 9
+      },
+      "gpt4_score": 9
+    },
+    {
+      "question_id": "mt-012",
+      "question": "sample question 12",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 3,
+        "judge_1": 1,
+        "judge_2": 4
+      },
+      "gpt4_score": 5
+    },
+    {
+      "question_id": "mt-013",
+      "question": "sample question 13",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 2,
+        "judge_1": 1,
+        "judge_2": 6
+      },
+      "gpt4_score": 7
+    },
+    {
+      "question_id": "mt-014",
+      "question": "sample question 14",
+      "category": "roleplay",
+      "judge_scores": {
+        "judge_0": 6,
+        "judge_1": 2,
+        "judge_2": 8
+      },
+      "gpt4_score": 7
+    },
+    {
+      "question_id": "mt-015",
+      "question": "sample question 15",
+      "category": "reasoning",
+      "judge_scores": {
+        "judge_0": 5,
+        "judge_1": 8,
+        "judge_2": 3
+      },
+      "gpt4_score": 8
+    },
+    {
+      "question_id": "mt-016",
+      "question": "sample question 16",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 6,
+        "judge_1": 2,
+        "judge_2": 2
+      },
+      "gpt4_score": 8
+    },
+    {
+      "question_id": "mt-017",
+      "question": "sample question 17",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 8,
+        "judge_1": 2,
+        "judge_2": 10
+      },
+      "gpt4_score": 4
+    },
+    {
+      "question_id": "mt-018",
+      "question": "sample question 18",
+      "category": "coding",
+      "judge_scores": {
+        "judge_0": 4,
+        "judge_1": 7,
+        "judge_2": 6
+      },
+      "gpt4_score": 10
+    },
+    {
+      "question_id": "mt-019",
+      "question": "sample question 19",
+      "category": "reasoning",
+      "judge_scores": {
+        "judge_0": 1,
+        "judge_1": 3,
+        "judge_2": 6
+      },
+      "gpt4_score": 2
+    },
+    {
+      "question_id": "mt-020",
+      "question": "sample question 20",
+      "category": "coding",
+      "judge_scores": {
+        "judge_0": 10,
+        "judge_1": 2,
+        "judge_2": 3
+      },
+      "gpt4_score": 5
+    },
+    {
+      "question_id": "mt-021",
+      "question": "sample question 21",
+      "category": "reasoning",
+      "judge_scores": {
+        "judge_0": 10,
+        "judge_1": 7,
+        "judge_2": 2
+      },
+      "gpt4_score": 6
+    },
+    {
+      "question_id": "mt-022",
+      "question": "sample question 22",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 9,
+        "judge_1": 3,
+        "judge_2": 8
+      },
+      "gpt4_score": 10
+    },
+    {
+      "question_id": "mt-023",
+      "question": "sample question 23",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 8,
+        "judge_1": 10,
+        "judge_2": 3
+      },
+      "gpt4_score": 10
+    },
+    {
+      "question_id": "mt-024",
+      "question": "sample question 24",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 1,
+        "judge_1": 5,
+        "judge_2": 9
+      },
+      "gpt4_score": 6
+    },
+    {
+      "question_id": "mt-025",
+      "question": "sample question 25",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 10,
+        "judge_1": 10,
+        "judge_2": 6
+      },
+      "gpt4_score": 9
+    },
+    {
+      "question_id": "mt-026",
+      "question": "sample question 26",
+      "category": "writing",
+      "judge_scores": {
+        "judge_0": 9,
+        "judge_1": 9,
+        "judge_2": 4
+      },
+      "gpt4_score": 4
+    },
+    {
+      "question_id": "mt-027",
+      "question": "sample question 27",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 1,
+        "judge_1": 6,
+        "judge_2": 2
+      },
+      "gpt4_score": 8
+    },
+    {
+      "question_id": "mt-028",
+      "question": "sample question 28",
+      "category": "math",
+      "judge_scores": {
+        "judge_0": 5,
+        "judge_1": 9,
+        "judge_2": 1
+      },
+      "gpt4_score": 9
+    },
+    {
+      "question_id": "mt-029",
+      "question": "sample question 29",
+      "category": "roleplay",
+      "judge_scores": {
+        "judge_0": 5,
+        "judge_1": 2,
+        "judge_2": 8
+      },
+      "gpt4_score": 1
+    }
+  ]
+}

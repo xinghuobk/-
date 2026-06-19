@@ -1,0 +1,288 @@
+{
+  "_source": "SYNTHETIC",
+  "_dataset": "ultrafeedback",
+  "_warning": "Offline fallback. 不可用于最终实验。",
+  "_generated_at": "2026-06-17T04:29:14Z",
+  "n_samples": 30,
+  "schema": [
+    "pair_id",
+    "prompt",
+    "response_a",
+    "response_b",
+    "score_a",
+    "score_b",
+    "judge_agreement"
+  ],
+  "samples": [
+    {
+      "pair_id": "uf-0000",
+      "prompt": "sample prompt 0",
+      "response_a": "sample response A 0",
+      "response_b": "sample response B 0",
+      "score_a": 4.98,
+      "score_b": 2.66,
+      "judge_agreement": 0.637
+    },
+    {
+      "pair_id": "uf-0001",
+      "prompt": "sample prompt 1",
+      "response_a": "sample response A 1",
+      "response_b": "sample response B 1",
+      "score_a": 2.42,
+      "score_b": 4.73,
+      "judge_agreement": 0.97
+    },
+    {
+      "pair_id": "uf-0002",
+      "prompt": "sample prompt 2",
+      "response_a": "sample response A 2",
+      "response_b": "sample response B 2",
+      "score_a": 0.85,
+      "score_b": 3.17,
+      "judge_agreement": 0.676
+    },
+    {
+      "pair_id": "uf-0003",
+      "prompt": "sample prompt 3",
+      "response_a": "sample response A 3",
+      "response_b": "sample response B 3",
+      "score_a": 0.85,
+      "score_b": 1.53,
+      "judge_agreement": 0.825
+    },
+    {
+      "pair_id": "uf-0004",
+      "prompt": "sample prompt 4",
+      "response_a": "sample response A 4",
+      "response_b": "sample response B 4",
+      "score_a": 9.8,
+      "score_b": 3.19,
+      "judge_agreement": 0.189
+    },
+    {
+      "pair_id": "uf-0005",
+      "prompt": "sample prompt 5",
+      "response_a": "sample response A 5",
+      "response_b": "sample response B 5",
+      "score_a": 9.72,
+      "score_b": 3.29,
+      "judge_agreement": 0.604
+    },
+    {
+      "pair_id": "uf-0006",
+      "prompt": "sample prompt 6",
+      "response_a": "sample response A 6",
+      "response_b": "sample response B 6",
+      "score_a": 6.07,
+      "score_b": 6.35,
+      "judge_agreement": 0.915
+    },
+    {
+      "pair_id": "uf-0007",
+      "prompt": "sample prompt 7",
+      "response_a": "sample response A 7",
+      "response_b": "sample response B 7",
+      "score_a": 9.62,
+      "score_b": 6.93,
+      "judge_agreement": 0.825
+    },
+    {
+      "pair_id": "uf-0008",
+      "prompt": "sample prompt 8",
+      "response_a": "sample response A 8",
+      "response_b": "sample response B 8",
+      "score_a": 7.94,
+      "score_b": 6.43,
+      "judge_agreement": 0.43
+    },
+    {
+      "pair_id": "uf-0009",
+      "prompt": "sample prompt 9",
+      "response_a": "sample response A 9",
+      "response_b": "sample response B 9",
+      "score_a": 2.27,
+      "score_b": 2.66,
+      "judge_agreement": 0.93
+    },
+    {
+      "pair_id": "uf-0010",
+      "prompt": "sample prompt 10",
+      "response_a": "sample response A 10",
+      "response_b": "sample response B 10",
+      "score_a": 7.0,
+      "score_b": 1.06,
+      "judge_agreement": 0.911
+    },
+    {
+      "pair_id": "uf-0011",
+      "prompt": "sample prompt 11",
+      "response_a": "sample response A 11",
+      "response_b": "sample response B 11",
+      "score_a": 2.71,
+      "score_b": 6.92,
+      "judge_agreement": 0.46
+    },
+    {
+      "pair_id": "uf-0012",
+      "prompt": "sample prompt 12",
+      "response_a": "sample response A 12",
+      "response_b": "sample response B 12",
+      "score_a": 2.7,
+      "score_b": 2.09,
+      "judge_agreement": 0.579
+    },
+    {
+      "pair_id": "uf-0013",
+      "prompt": "sample prompt 13",
+      "response_a": "sample response A 13",
+      "response_b": "sample response B 13",
+      "score_a": 4.12,
+      "score_b": 6.24,
+      "judge_agreement": 0.696
+    },
+    {
+      "pair_id": "uf-0014",
+      "prompt": "sample prompt 14",
+      "response_a": "sample response A 14",
+      "response_b": "sample response B 14",
+      "score_a": 8.19,
+      "score_b": 8.53,
+      "judge_agreement": 0.625
+    },
+    {
+      "pair_id": "uf-0015",
+      "prompt": "sample prompt 15",
+      "response_a": "sample response A 15",
+      "response_b": "sample response B 15",
+      "score_a": 9.66,
+      "score_b": 4.96,
+      "judge_agreement": 0.888
+    },
+    {
+      "pair_id": "uf-0016",
+      "prompt": "sample prompt 16",
+      "response_a": "sample response A 16",
+      "response_b": "sample response B 16",
+      "score_a": 8.15,
+      "score_b": 8.18,
+      "judge_agreement": 0.125
+    },
+    {
+      "pair_id": "uf-0017",
+      "prompt": "sample prompt 17",
+      "response_a": "sample response A 17",
+      "response_b": "sample response B 17",
+      "score_a": 5.7,
+      "score_b": 5.17,
+      "judge_agreement": 0.093
+    },
+    {
+      "pair_id": "uf-0018",
+      "prompt": "sample prompt 18",
+      "response_a": "sample response A 18",
+      "response_b": "sample response B 18",
+      "score_a": 3.68,
+      "score_b": 5.17,
+      "judge_agreement": 0.007
+    },
+    {
+      "pair_id": "uf-0019",
+      "prompt": "sample prompt 19",
+      "response_a": "sample response A 19",
+      "response_b": "sample response B 19",
+      "score_a": 0.09,
+      "score_b": 5.87,
+      "judge_agreement": 0.411
+    },
+    {
+      "pair_id": "uf-0020",
+      "prompt": "sample prompt 20",
+      "response_a": "sample response A 20",
+      "response_b": "sample response B 20",
+      "score_a": 9.78,
+      "score_b": 8.5,
+      "judge_agreement": 0.829
+    },
+    {
+      "pair_id": "uf-0021",
+      "prompt": "sample prompt 21",
+      "response_a": "sample response A 21",
+      "response_b": "sample response B 21",
+      "score_a": 8.03,
+      "score_b": 2.24,
+      "judge_agreement": 0.726
+    },
+    {
+      "pair_id": "uf-0022",
+      "prompt": "sample prompt 22",
+      "response_a": "sample response A 22",
+      "response_b": "sample response B 22",
+      "score_a": 0.98,
+      "score_b": 1.37,
+      "judge_agreement": 0.376
+    },
+    {
+      "pair_id": "uf-0023",
+      "prompt": "sample prompt 23",
+      "response_a": "sample response A 23",
+      "response_b": "sample response B 23",
+      "score_a": 2.46,
+      "score_b": 0.34,
+      "judge_agreement": 0.518
+    },
+    {
+      "pair_id": "uf-0024",
+      "prompt": "sample prompt 24",
+      "response_a": "sample response A 24",
+      "response_b": "sample response B 24",
+      "score_a": 9.66,
+      "score_b": 0.79,
+      "judge_agreement": 0.237
+    },
+    {
+      "pair_id": "uf-0025",
+      "prompt": "sample prompt 25",
+      "response_a": "sample response A 25",
+      "response_b": "sample response B 25",
+      "score_a": 9.26,
+      "score_b": 5.28,
+      "judge_agreement": 0.465
+    },
+    {
+      "pair_id": "uf-0026",
+      "prompt": "sample prompt 26",
+      "response_a": "sample response A 26",
+      "response_b": "sample response B 26",
+      "score_a": 4.18,
+      "score_b": 8.21,
+      "judge_agreement": 0.47
+    },
+    {
+      "pair_id": "uf-0027",
+      "prompt": "sample prompt 27",
+      "response_a": "sample response A 27",
+      "response_b": "sample response B 27",
+      "score_a": 4.03,
+      "score_b": 3.63,
+      "judge_agreement": 0.775
+    },
+    {
+      "pair_id": "uf-0028",
+      "prompt": "sample prompt 28",
+      "response_a": "sample response A 28",
+      "response_b": "sample response B 28",
+      "score_a": 0.19,
+      "score_b": 4.44,
+      "judge_agreement": 0.639
+    },
+    {
+      "pair_id": "uf-0029",
+      "prompt": "sample prompt 29",
+      "response_a": "sample response A 29",
+      "response_b": "sample response B 29",
+      "score_a": 0.09,
+      "score_b": 3.17,
+      "judge_agreement": 0.347
+    }
+  ]
+}

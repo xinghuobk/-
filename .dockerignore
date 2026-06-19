@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+
+# Python 缓存
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# 数据文件（容器内下载）
+data/raw/
+data/processed/
+experiments/
+reports/
+logs/
+
+# 桌面端打包产物
+desktop/dist/
+desktop/build/
+desktop/*.spec
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境
+.env
+.env.*
+.env_local
+
+# Docker
+docker/Dockerfile.ollama   # 单独构建，节省上下文
+docker_context/
+
+# 其他
+*.md
+!requirements.txt
+LICENSE
+README.md
+docs/

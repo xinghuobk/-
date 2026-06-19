@@ -1,0 +1,4 @@
+建议设计 3 个实验：
+1) belief_alignment_sweep — 不同 judge prompt 下的胜负偏差；
+2) temperature_sweep — temperature 0.0~1.2；
+3) multi_round_stats — 5 次重复同一问题看统计显著性。
