@@ -1,0 +1,92 @@
+[
+  {
+    "exp_id": "exp-3028c1d1",
+    "run_id": "76578ebc",
+    "problem": "远程办公是否应该成为主流",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 10,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 55.0,
+      "con_score": 55.4,
+      "total_time": 2.63,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:baseline-mock] Baseline mock 实验（默认 3 轮）",
+    "timestamp": 1781887234.881514
+  },
+  {
+    "exp_id": "exp-10e4a3d9",
+    "run_id": "90dc0c7d",
+    "problem": "远程办公是否应该成为主流",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 55.0,
+      "con_score": 55.4,
+      "total_time": 1.31,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:belief_alignment_bias_test] 信念对齐偏差测试 — 模拟共识偏向伪结论",
+    "timestamp": 1781887236.194144
+  },
+  {
+    "exp_id": "exp-540eac68",
+    "run_id": "50759379",
+    "problem": "人工智能是否会导致大规模失业",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 10,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 54.0,
+      "con_score": 55.6,
+      "total_time": 3.21,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:rebuttal_coverage_sweep] 反驳覆盖率扫掠 — 不同关键词重叠阈值",
+    "timestamp": 1781887239.4006364
+  }
+]
