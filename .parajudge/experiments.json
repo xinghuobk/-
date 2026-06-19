@@ -1018,5 +1018,305 @@
     },
     "notes": "[autodriver:auto-v34/creative_fallback] 反思驱动实验",
     "timestamp": 1781906229.421559
+  },
+  {
+    "exp_id": "exp-ce3edac7",
+    "run_id": "741a85b8",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 1.11,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v35/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906230.7455046
+  },
+  {
+    "exp_id": "exp-c375d652",
+    "run_id": "6246c1de",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 1.08,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v36/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906232.0391328
+  },
+  {
+    "exp_id": "exp-0fa4d4ae",
+    "run_id": "e10f8389",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 1.13,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v37/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906233.3778083
+  },
+  {
+    "exp_id": "exp-7a49a3e4",
+    "run_id": "c37a56c0",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.79,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v38/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906234.3831758
+  },
+  {
+    "exp_id": "exp-42bd1891",
+    "run_id": "461057a1",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.98,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v39/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906235.5724723
+  },
+  {
+    "exp_id": "exp-f06b6df2",
+    "run_id": "893e82fc",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.78,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v40/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906236.5650408
+  },
+  {
+    "exp_id": "exp-741e0287",
+    "run_id": "fd72e380",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.9,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v41/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906237.6762397
+  },
+  {
+    "exp_id": "exp-561a766c",
+    "run_id": "6ca4b01a",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.97,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v42/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906238.858087
+  },
+  {
+    "exp_id": "exp-8be63816",
+    "run_id": "124774aa",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 0.79,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v43/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906239.8631592
+  },
+  {
+    "exp_id": "exp-f2c6fdf0",
+    "run_id": "4ac11bac",
+    "problem": "远程办公是否应成为主流？",
+    "config": {
+      "provider": "mock",
+      "model": "mock-model",
+      "api_key": null,
+      "rounds": 3,
+      "max_evidence": 8,
+      "enable_llm_review": true,
+      "enable_moderator": true,
+      "moderator_strictness": "normal",
+      "enable_t1_aebg": true,
+      "enable_t3_ks": true,
+      "enable_t4_ds": true,
+      "use_judge_v2": false,
+      "enable_fact_check": false
+    },
+    "metrics": {
+      "winner": "tie",
+      "pro_score": 53.4,
+      "con_score": 54.2,
+      "total_time": 1.09,
+      "rounds": 3,
+      "n_arguments": 8
+    },
+    "notes": "[autodriver:auto-v44/creative_fallback] 反思驱动实验",
+    "timestamp": 1781906241.1638892
   }
 ]
